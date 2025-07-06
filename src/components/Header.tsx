@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Car } from "lucide-react";
+import { Search, Car } from "lucide-react";
+import { AddCarDialog } from "./AddCarDialog";
 
 interface HeaderProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  onAddCar: () => void;
 }
 
-export function Header({ searchTerm, onSearchChange, onAddCar }: HeaderProps) {
+export function Header({ searchTerm, onSearchChange }: HeaderProps) {
   return (
     <div className="mb-8">
       {/* App Title */}
@@ -23,13 +23,7 @@ export function Header({ searchTerm, onSearchChange, onAddCar }: HeaderProps) {
           </div>
         </div>
         
-        <Button 
-          onClick={onAddCar}
-          className="bg-gradient-primary hover:opacity-90 transition-opacity"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Carro
-        </Button>
+        <AddCarDialog />
       </div>
 
       {/* Search */}

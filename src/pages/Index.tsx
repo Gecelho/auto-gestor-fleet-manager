@@ -3,74 +3,43 @@ import { useNavigate } from "react-router-dom";
 import { CarCard } from "@/components/CarCard";
 import { FinancialSummary } from "@/components/FinancialSummary";
 import { Header } from "@/components/Header";
-import car1Image from "@/assets/car-1.jpg";
-import car2Image from "@/assets/car-2.jpg";
-import car3Image from "@/assets/car-3.jpg";
+import { useCars } from "@/hooks/useCars";
 
-// Mock data - in a real app this would come from API/database
-const mockCars = [
-  {
-    id: "1",
-    name: "Onix LT 2022",
-    plate: "ABC-1234",
-    image: car1Image,
-    purchaseValue: 45000,
-    totalRevenue: 3000,
-    totalExpenses: 2240,
-    remainingBalance: 44240,
-    status: "alugado" as const
-  },
-  {
-    id: "2", 
-    name: "HB20 Comfort 2021",
-    plate: "DEF-5678",
-    image: car2Image,
-    purchaseValue: 38000,
-    totalRevenue: 4500,
-    totalExpenses: 1800,
-    remainingBalance: 35300,
-    status: "andamento" as const
-  },
-  {
-    id: "3",
-    name: "Fiesta SE 2020", 
-    plate: "GHI-9012",
-    image: car3Image,
-    purchaseValue: 35000,
-    totalRevenue: 8000,
-    totalExpenses: 3200,
-    remainingBalance: 30200,
-    status: "quitado" as const
-  }
-];
 
 const Index = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [cars] = useState(mockCars);
+  const { data: cars, isLoading, error } = useCars();
 
   // Filter cars based on search term
-  const filteredCars = cars.filter(car =>
+  const filteredCars = cars?.filter(car =>
     car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     car.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
     car.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) || [];
 
   // Calculate totals
-  const totals = cars.reduce((acc, car) => ({
+  const totals = cars?.reduce((acc, car) => ({
     totalRevenue: acc.totalRevenue + car.totalRevenue,
     totalExpenses: acc.totalExpenses + car.totalExpenses,
     totalPendingBalance: acc.totalPendingBalance + car.remainingBalance
-  }), { totalRevenue: 0, totalExpenses: 0, totalPendingBalance: 0 });
+  }), { totalRevenue: 0, totalExpenses: 0, totalPendingBalance: 0 }) || { totalRevenue: 0, totalExpenses: 0, totalPendingBalance: 0 };
 
   const handleCarClick = (carId: string) => {
     navigate(`/car/${carId}`);
   };
 
-  const handleAddCar = () => {
-    // In a real app, this would open a modal or navigate to add car page
-    console.log("Add new car");
-  };
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Erro ao carregar dados</h2>
+          <p className="text-muted-foreground">Tente recarregar a página</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -78,27 +47,32 @@ const Index = () => {
         <Header 
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          onAddCar={handleAddCar}
         />
         
         <FinancialSummary 
           totalRevenue={totals.totalRevenue}
           totalExpenses={totals.totalExpenses}
           totalPendingBalance={totals.totalPendingBalance}
-          totalCars={cars.length}
+          totalCars={cars?.length || 0}
         />
 
         {/* Cars List */}
-        <div className="space-y-4">
+        <div className="space-y-4" style={{ backgroundColor: 'var(--cars-background)', padding: '1.5rem', borderRadius: '12px' }}>
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground">
+            <h2 className="text-xl font-semibold text-white">
               Seus Carros ({filteredCars.length})
             </h2>
           </div>
           
-          {filteredCars.length === 0 ? (
+          {isLoading ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Nenhum carro encontrado</p>
+              <p className="text-white">Carregando carros...</p>
+            </div>
+          ) : filteredCars.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-white">
+                {cars?.length === 0 ? "Nenhum carro cadastrado. Adicione seu primeiro carro!" : "Nenhum carro encontrado"}
+              </p>
             </div>
           ) : (
             <div className="grid gap-4">
@@ -108,8 +82,8 @@ const Index = () => {
                   id={car.id}
                   name={car.name}
                   plate={car.plate}
-                  image={car.image}
-                  purchaseValue={car.purchaseValue}
+                  image={car.image_url || "/placeholder.svg"}
+                  purchaseValue={car.purchase_value}
                   totalRevenue={car.totalRevenue}
                   totalExpenses={car.totalExpenses}
                   remainingBalance={car.remainingBalance}

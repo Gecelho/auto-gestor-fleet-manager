@@ -9,7 +9,168 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cars: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          mileage: number | null
+          name: string
+          notes: string | null
+          payment_method: string | null
+          plate: string
+          purchase_date: string | null
+          purchase_value: number
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          mileage?: number | null
+          name: string
+          notes?: string | null
+          payment_method?: string | null
+          plate: string
+          purchase_date?: string | null
+          purchase_value: number
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          mileage?: number | null
+          name?: string
+          notes?: string | null
+          payment_method?: string | null
+          plate?: string
+          purchase_date?: string | null
+          purchase_value?: number
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      drivers: {
+        Row: {
+          address: string | null
+          car_id: string
+          cpf: string | null
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          car_id: string
+          cpf?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          car_id?: string
+          cpf?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          car_id: string
+          category: string
+          created_at: string
+          date: string
+          description: string
+          id: string
+          value: number
+        }
+        Insert: {
+          car_id: string
+          category: string
+          created_at?: string
+          date: string
+          description: string
+          id?: string
+          value: number
+        }
+        Update: {
+          car_id?: string
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenues: {
+        Row: {
+          car_id: string
+          created_at: string
+          date: string
+          description: string
+          id: string
+          type: string
+          value: number
+        }
+        Insert: {
+          car_id: string
+          created_at?: string
+          date: string
+          description: string
+          id?: string
+          type: string
+          value: number
+        }
+        Update: {
+          car_id?: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          type?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenues_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

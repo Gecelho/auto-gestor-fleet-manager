@@ -1,49 +1,45 @@
-import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Edit, Trash2, Phone, MessageCircle } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Phone, MessageCircle, Loader2 } from "lucide-react";
+import { useCarDetails } from "@/hooks/useCarDetails";
+import { AddExpenseDialog } from "@/components/AddExpenseDialog";
+import { AddRevenueDialog } from "@/components/AddRevenueDialog";
+import { MonthlyReportDialog } from "@/components/MonthlyReportDialog";
 
-// Mock data - in a real app this would come from props or API
-const mockCarData = {
-  id: "1",
-  name: "Onix LT 2022",
-  plate: "ABC-1234",
-  image: "/src/assets/car-1.jpg",
-  purchaseValue: 45000,
-  paymentMethod: "Financiado",
-  purchaseDate: "2023-01-15",
-  mileage: 25000,
-  notes: "Carro em excelente estado",
-  status: "alugado" as const,
-  expenses: [
-    { id: "1", description: "Troca de óleo", value: 150, date: "2024-01-10", category: "manutenção" },
-    { id: "2", description: "IPVA 2024", value: 890, date: "2024-02-01", category: "documentos" },
-    { id: "3", description: "Seguro anual", value: 1200, date: "2024-01-05", category: "seguro" }
-  ],
-  revenues: [
-    { id: "1", description: "Aluguel Janeiro", value: 1500, date: "2024-01-31", type: "aluguel" },
-    { id: "2", description: "Aluguel Fevereiro", value: 1500, date: "2024-02-29", type: "aluguel" }
-  ],
-  driver: {
-    name: "João Silva",
-    phone: "(11) 99999-9999",
-    cpf: "123.456.789-00",
-    address: "Rua das Flores, 123 - São Paulo/SP"
-  }
-};
 
 export default function CarDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [car] = useState(mockCarData);
+  const { data, isLoading, error } = useCarDetails(id!);
 
-  const totalExpenses = car.expenses.reduce((sum, expense) => sum + expense.value, 0);
-  const totalRevenues = car.revenues.reduce((sum, revenue) => sum + revenue.value, 0);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Carro não encontrado</h2>
+          <Button onClick={() => navigate("/")}>Voltar para lista</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const { car, expenses, revenues, driver } = data;
+
+  const totalExpenses = expenses.reduce((sum, expense) => sum + Number(expense.value), 0);
+  const totalRevenues = revenues.reduce((sum, revenue) => sum + Number(revenue.value), 0);
   const netProfit = totalRevenues - totalExpenses;
-  const remainingBalance = car.purchaseValue - netProfit;
+  const remainingBalance = Number(car.purchase_value) - netProfit;
 
   const statusConfig = {
     quitado: { label: "Quitado", className: "bg-success text-success-foreground" },
@@ -80,7 +76,7 @@ export default function CarDetail() {
         <Card className="mb-6 overflow-hidden">
           <div className="h-64 bg-muted">
             <img 
-              src={car.image} 
+              src={car.image_url || "/placeholder.svg"} 
               alt={car.name}
               className="w-full h-full object-cover"
             />
@@ -91,7 +87,7 @@ export default function CarDetail() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card className="p-4">
             <p className="text-sm text-muted-foreground">Valor de Compra</p>
-            <p className="text-xl font-bold">R$ {car.purchaseValue.toLocaleString("pt-BR")}</p>
+            <p className="text-xl font-bold">R$ {Number(car.purchase_value).toLocaleString("pt-BR")}</p>
           </Card>
           <Card className="p-4">
             <p className="text-sm text-muted-foreground">Total Receitas</p>
@@ -109,6 +105,11 @@ export default function CarDetail() {
           </Card>
         </div>
 
+        {/* Monthly Report Button */}
+        <div className="mb-6">
+          <MonthlyReportDialog carId={car.id} />
+        </div>
+
         {/* Tabs */}
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4">
@@ -124,15 +125,19 @@ export default function CarDetail() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Forma de Pagamento</p>
-                  <p className="font-medium">{car.paymentMethod}</p>
+                  <p className="font-medium">{car.payment_method || "Não informado"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Data da Compra</p>
-                  <p className="font-medium">{new Date(car.purchaseDate).toLocaleDateString("pt-BR")}</p>
+                  <p className="font-medium">
+                    {car.purchase_date ? new Date(car.purchase_date).toLocaleDateString("pt-BR") : "Não informado"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Quilometragem</p>
-                  <p className="font-medium">{car.mileage.toLocaleString("pt-BR")} km</p>
+                  <p className="font-medium">
+                    {car.mileage ? `${car.mileage.toLocaleString("pt-BR")} km` : "Não informado"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Falta para Quitar</p>
@@ -152,33 +157,34 @@ export default function CarDetail() {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Despesas</h3>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Despesa
-                </Button>
+                <AddExpenseDialog carId={car.id} />
               </div>
               <div className="space-y-3">
-                {car.expenses.map((expense) => (
-                  <div key={expense.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div>
-                      <p className="font-medium">{expense.description}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(expense.date).toLocaleDateString("pt-BR")} • {expense.category}
-                      </p>
+                {expenses.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">Nenhuma despesa cadastrada</p>
+                ) : (
+                  expenses.map((expense) => (
+                    <div key={expense.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div>
+                        <p className="font-medium">{expense.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(expense.date).toLocaleDateString("pt-BR")} • {expense.category}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-danger">
+                          R$ {Number(expense.value).toLocaleString("pt-BR")}
+                        </span>
+                        <Button variant="ghost" size="icon">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-danger">
-                        R$ {expense.value.toLocaleString("pt-BR")}
-                      </span>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </Card>
           </TabsContent>
@@ -187,33 +193,34 @@ export default function CarDetail() {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Receitas</h3>
-                <Button variant="success">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Receita
-                </Button>
+                <AddRevenueDialog carId={car.id} />
               </div>
               <div className="space-y-3">
-                {car.revenues.map((revenue) => (
-                  <div key={revenue.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div>
-                      <p className="font-medium">{revenue.description}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(revenue.date).toLocaleDateString("pt-BR")} • {revenue.type}
-                      </p>
+                {revenues.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">Nenhuma receita cadastrada</p>
+                ) : (
+                  revenues.map((revenue) => (
+                    <div key={revenue.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div>
+                        <p className="font-medium">{revenue.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(revenue.date).toLocaleDateString("pt-BR")} • {revenue.type}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-success">
+                          R$ {Number(revenue.value).toLocaleString("pt-BR")}
+                        </span>
+                        <Button variant="ghost" size="icon">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-success">
-                        R$ {revenue.value.toLocaleString("pt-BR")}
-                      </span>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </Card>
           </TabsContent>
@@ -227,34 +234,46 @@ export default function CarDetail() {
                   Editar
                 </Button>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Nome Completo</p>
-                  <p className="font-medium">{car.driver.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Telefone</p>
-                  <div className="flex items-center space-x-2">
-                    <p className="font-medium">{car.driver.phone}</p>
-                    <Button variant="outline" size="sm">
-                      <Phone className="w-4 h-4 mr-2" />
-                      Ligar
-                    </Button>
-                    <Button variant="success" size="sm">
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      WhatsApp
-                    </Button>
+              {driver ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Nome Completo</p>
+                    <p className="font-medium">{driver.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Telefone</p>
+                    <div className="flex items-center space-x-2">
+                      <p className="font-medium">{driver.phone || "Não informado"}</p>
+                      {driver.phone && (
+                        <>
+                          <Button variant="outline" size="sm">
+                            <Phone className="w-4 h-4 mr-2" />
+                            Ligar
+                          </Button>
+                          <Button 
+                            variant="success" 
+                            size="sm"
+                            onClick={() => window.open(`https://wa.me/55${driver.phone?.replace(/\D/g, '')}`)}
+                          >
+                            <MessageCircle className="w-4 h-4 mr-2" />
+                            WhatsApp
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">CPF</p>
+                    <p className="font-medium">{driver.cpf || "Não informado"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Endereço</p>
+                    <p className="font-medium">{driver.address || "Não informado"}</p>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">CPF</p>
-                  <p className="font-medium">{car.driver.cpf}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Endereço</p>
-                  <p className="font-medium">{car.driver.address}</p>
-                </div>
-              </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">Nenhum motorista cadastrado</p>
+              )}
             </Card>
           </TabsContent>
         </Tabs>
