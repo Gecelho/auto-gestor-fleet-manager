@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useAddCar } from "@/hooks/useCars";
 import { useImageUpload } from "@/hooks/useImageUpload";
-import { Plus, Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface AddCarForm {
   name: string;
@@ -38,7 +38,7 @@ interface AddCarForm {
 export function AddCarDialog() {
   const [open, setOpen] = useState(false);
   const { mutate: addCar, isPending } = useAddCar();
-  const { uploadImage, isUploading } = useImageUpload();
+  const { uploadImage, uploading } = useImageUpload();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
@@ -68,7 +68,7 @@ export function AddCarDialog() {
 
       // Upload image if selected
       if (selectedImage) {
-        imageUrl = await uploadImage(selectedImage, "car-images");
+        imageUrl = await uploadImage(selectedImage);
       }
 
       addCar({
@@ -237,8 +237,8 @@ export function AddCarDialog() {
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isPending || isUploading}>
-              {isPending || isUploading ? "Adicionando..." : "Adicionar Carro"}
+            <Button type="submit" disabled={isPending || uploading}>
+              {isPending || uploading ? "Adicionando..." : "Adicionar Carro"}
             </Button>
           </div>
         </form>

@@ -23,7 +23,7 @@ import {
 import { useUpdateCar } from "@/hooks/useCars";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { Car } from "@/types/database";
-import { Edit, Upload } from "lucide-react";
+import { Edit } from "lucide-react";
 
 interface EditCarDialogProps {
   car: Car;
@@ -43,7 +43,7 @@ interface EditCarForm {
 export function EditCarDialog({ car }: EditCarDialogProps) {
   const [open, setOpen] = useState(false);
   const { mutate: updateCar, isPending } = useUpdateCar();
-  const { uploadImage, isUploading } = useImageUpload();
+  const { uploadImage, uploading } = useImageUpload();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(car.image_url || "");
 
@@ -80,7 +80,7 @@ export function EditCarDialog({ car }: EditCarDialogProps) {
 
       // Upload new image if selected
       if (selectedImage) {
-        const uploadedUrl = await uploadImage(selectedImage, "car-images");
+        const uploadedUrl = await uploadImage(selectedImage);
         imageUrl = uploadedUrl;
       }
 
@@ -239,8 +239,8 @@ export function EditCarDialog({ car }: EditCarDialogProps) {
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isPending || isUploading}>
-              {isPending || isUploading ? "Salvando..." : "Salvar Alterações"}
+            <Button type="submit" disabled={isPending || uploading}>
+              {isPending || uploading ? "Salvando..." : "Salvar Alterações"}
             </Button>
           </div>
         </form>
