@@ -20,11 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAddCar } from "@/hooks/useCars";
+import { useUpdateCar } from "@/hooks/useCars";
 import { useImageUpload } from "@/hooks/useImageUpload";
-import { Plus, Upload } from "lucide-react";
+import { Car } from "@/types/database";
+import { Edit, Upload } from "lucide-react";
 
-interface AddCarForm {
+interface EditCarDialogProps {
+  car: Car;
+}
+
+interface EditCarForm {
   name: string;
   plate: string;
   purchase_value: string;
@@ -35,16 +40,23 @@ interface AddCarForm {
   notes: string;
 }
 
-export function AddCarDialog() {
+export function EditCarDialog({ car }: EditCarDialogProps) {
   const [open, setOpen] = useState(false);
-  const { mutate: addCar, isPending } = useAddCar();
+  const { mutate: updateCar, isPending } = useUpdateCar();
   const { uploadImage, isUploading } = useImageUpload();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState<string>(car.image_url || "");
 
-  const { register, handleSubmit, setValue, watch, reset } = useForm<AddCarForm>({
+  const { register, handleSubmit, setValue, watch, reset } = useForm<EditCarForm>({
     defaultValues: {
-      status: "andamento",
+      name: car.name,
+      plate: car.plate,
+      purchase_value: car.purchase_value.toString(),
+      payment_method: car.payment_method || "",
+      purchase_date: car.purchase_date || "",
+      mileage: car.mileage?.toString() || "",
+      status: car.status,
+      notes: car.notes || "",
     },
   });
 
@@ -62,16 +74,18 @@ export function AddCarDialog() {
     }
   };
 
-  const onSubmit = async (data: AddCarForm) => {
+  const onSubmit = async (data: EditCarForm) => {
     try {
-      let imageUrl = null;
+      let imageUrl = car.image_url;
 
-      // Upload image if selected
+      // Upload new image if selected
       if (selectedImage) {
-        imageUrl = await uploadImage(selectedImage, "car-images");
+        const uploadedUrl = await uploadImage(selectedImage, "car-images");
+        imageUrl = uploadedUrl;
       }
 
-      addCar({
+      updateCar({
+        id: car.id,
         name: data.name,
         plate: data.plate,
         purchase_value: parseFloat(data.purchase_value),
@@ -86,34 +100,25 @@ export function AddCarDialog() {
       setOpen(false);
       reset();
       setSelectedImage(null);
-      setImagePreview("");
+      setImagePreview(car.image_url || "");
     } catch (error) {
-      console.error("Error adding car:", error);
-    }
-  };
-
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      reset();
-      setSelectedImage(null);
-      setImagePreview("");
+      console.error("Error updating car:", error);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full">
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Carro
+        <Button variant="outline" size="sm">
+          <Edit className="w-4 h-4 mr-2" />
+          Editar
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Carro</DialogTitle>
+          <DialogTitle>Editar Carro</DialogTitle>
           <DialogDescription>
-            Preencha as informações do carro que deseja adicionar ao sistema.
+            Edite as informações do carro. Clique em salvar quando terminar.
           </DialogDescription>
         </DialogHeader>
 
@@ -152,10 +157,7 @@ export function AddCarDialog() {
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select 
-                value={status || "andamento"} 
-                onValueChange={(value) => setValue("status", value as "quitado" | "andamento" | "alugado")}
-              >
+              <Select value={status} onValueChange={(value) => setValue("status", value as any)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
@@ -233,12 +235,12 @@ export function AddCarDialog() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleOpenChange(false)}
+              onClick={() => setOpen(false)}
             >
               Cancelar
             </Button>
             <Button type="submit" disabled={isPending || isUploading}>
-              {isPending || isUploading ? "Adicionando..." : "Adicionar Carro"}
+              {isPending || isUploading ? "Salvando..." : "Salvar Alterações"}
             </Button>
           </div>
         </form>

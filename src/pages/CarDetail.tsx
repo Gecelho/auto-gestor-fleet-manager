@@ -8,6 +8,8 @@ import { useCarDetails } from "@/hooks/useCarDetails";
 import { AddExpenseDialog } from "@/components/AddExpenseDialog";
 import { AddRevenueDialog } from "@/components/AddRevenueDialog";
 import { MonthlyReportDialog } from "@/components/MonthlyReportDialog";
+import { EditCarDialog } from "@/components/EditCarDialog";
+import { DeleteCarDialog } from "@/components/DeleteCarDialog";
 
 export default function CarDetail() {
   const navigate = useNavigate();
@@ -49,6 +51,10 @@ export default function CarDetail() {
   // Use only valid images from Supabase or placeholder
   const imageUrl = car.image_url && car.image_url.includes('supabase') ? car.image_url : "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
 
+  const handleDeleteSuccess = () => {
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
@@ -71,6 +77,16 @@ export default function CarDetail() {
               </div>
               <p className="text-muted-foreground">{car.plate}</p>
             </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-2">
+            <EditCarDialog car={car} />
+            <DeleteCarDialog 
+              carId={car.id} 
+              carName={car.name}
+              onDelete={handleDeleteSuccess}
+            />
           </div>
         </div>
 
