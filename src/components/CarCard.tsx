@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Car, DollarSign, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
@@ -35,6 +36,9 @@ export function CarCard({
     alugado: { label: "Alugado", className: "bg-info text-info-foreground" }
   };
 
+  // Use only valid images from Supabase or placeholder
+  const imageUrl = image && image.includes('supabase') ? image : "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=400&h=300&fit=crop";
+
   return (
     <Card 
       className="p-4 cursor-pointer hover:shadow-card transition-all duration-300 hover:scale-[1.02] bg-gradient-card"
@@ -44,9 +48,13 @@ export function CarCard({
         {/* Car Image */}
         <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
           <img 
-            src={image} 
+            src={imageUrl} 
             alt={name}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=400&h=300&fit=crop";
+            }}
           />
         </div>
         

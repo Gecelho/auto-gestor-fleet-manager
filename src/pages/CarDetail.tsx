@@ -9,7 +9,6 @@ import { AddExpenseDialog } from "@/components/AddExpenseDialog";
 import { AddRevenueDialog } from "@/components/AddRevenueDialog";
 import { MonthlyReportDialog } from "@/components/MonthlyReportDialog";
 
-
 export default function CarDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -47,6 +46,9 @@ export default function CarDetail() {
     alugado: { label: "Alugado", className: "bg-info text-info-foreground" }
   };
 
+  // Use only valid images from Supabase or placeholder
+  const imageUrl = car.image_url && car.image_url.includes('supabase') ? car.image_url : "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
@@ -76,9 +78,13 @@ export default function CarDetail() {
         <Card className="mb-6 overflow-hidden">
           <div className="h-64 bg-muted">
             <img 
-              src={car.image_url || "/placeholder.svg"} 
+              src={imageUrl} 
               alt={car.name}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
+              }}
             />
           </div>
         </Card>
@@ -251,7 +257,7 @@ export default function CarDetail() {
                             Ligar
                           </Button>
                           <Button 
-                            variant="success" 
+                            variant="default" 
                             size="sm"
                             onClick={() => window.open(`https://wa.me/55${driver.phone?.replace(/\D/g, '')}`)}
                           >
