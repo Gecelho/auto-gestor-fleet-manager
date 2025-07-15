@@ -110,7 +110,7 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="category">Categoria *</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value as typeof formData.category })}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>

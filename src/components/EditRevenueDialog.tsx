@@ -110,7 +110,7 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="type">Tipo *</Label>
-            <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+            <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value as typeof formData.type })}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
