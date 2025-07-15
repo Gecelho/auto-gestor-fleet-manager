@@ -1,11 +1,13 @@
+
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Plus, Loader2 } from "lucide-react";
-import { useAddExpense } from "@/hooks/useCarDetails";
+import { useAddExpense } from "@/hooks/useExpenses";
 
 interface AddExpenseDialogProps {
   carId: string;
@@ -16,11 +18,20 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
   const [formData, setFormData] = useState({
     description: "",
     value: "",
-    date: new Date().toISOString().split('T')[0],
-    category: "manutenção" as const,
+    date: "",
+    category: "",
   });
 
   const addExpenseMutation = useAddExpense();
+
+  const resetForm = () => {
+    setFormData({
+      description: "",
+      value: "",
+      date: "",
+      category: "",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,21 +45,24 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
         category: formData.category,
       });
 
-      // Reset form
-      setFormData({
-        description: "",
-        value: "",
-        date: new Date().toISOString().split('T')[0],
-        category: "manutenção",
-      });
+      resetForm();
       setOpen(false);
     } catch (error) {
       console.error("Error adding expense:", error);
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      resetForm();
+    }
+  };
+
+  const isLoading = addExpenseMutation.isPending;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="w-4 h-4 mr-2" />
@@ -58,6 +72,9 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Adicionar Despesa</DialogTitle>
+          <DialogDescription>
+            Registre uma nova despesa para este carro.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -97,26 +114,27 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="category">Categoria *</Label>
-            <Select value={formData.category} onValueChange={(value: typeof formData.category) => setFormData({ ...formData, category: value })}>
+            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="manutenção">Manutenção</SelectItem>
-                <SelectItem value="documentos">Documentos</SelectItem>
+                <SelectItem value="manutencao">Manutenção</SelectItem>
+                <SelectItem value="combustivel">Combustível</SelectItem>
                 <SelectItem value="seguro">Seguro</SelectItem>
+                <SelectItem value="documentacao">Documentação</SelectItem>
                 <SelectItem value="outros">Outros</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={addExpenseMutation.isPending}>
-              {addExpenseMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Adicionar
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Adicionar Despesa
             </Button>
           </div>
         </form>

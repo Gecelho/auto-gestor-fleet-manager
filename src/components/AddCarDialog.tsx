@@ -1,11 +1,12 @@
+
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Upload, Loader2 } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { useAddCar } from "@/hooks/useCars";
 import { useImageUpload } from "@/hooks/useImageUpload";
 
@@ -39,6 +40,21 @@ export function AddCarDialog() {
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      plate: "",
+      purchase_value: "",
+      payment_method: "",
+      purchase_date: "",
+      mileage: "",
+      notes: "",
+      status: "andamento",
+    });
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -62,29 +78,25 @@ export function AddCarDialog() {
         status: formData.status,
       });
 
-      // Reset form
-      setFormData({
-        name: "",
-        plate: "",
-        purchase_value: "",
-        payment_method: "",
-        purchase_date: "",
-        mileage: "",
-        notes: "",
-        status: "andamento",
-      });
-      setSelectedImage(null);
-      setImagePreview(null);
+      // Reset form and close dialog
+      resetForm();
       setOpen(false);
     } catch (error) {
       console.error("Error adding car:", error);
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      resetForm();
+    }
+  };
+
   const isLoading = addCarMutation.isPending || uploading;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
@@ -94,6 +106,9 @@ export function AddCarDialog() {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Adicionar Novo Carro</DialogTitle>
+          <DialogDescription>
+            Preencha as informações do carro que deseja adicionar ao sistema.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Image Upload */}
@@ -216,7 +231,7 @@ export function AddCarDialog() {
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>

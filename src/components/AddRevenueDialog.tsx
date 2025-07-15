@@ -1,11 +1,12 @@
+
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Loader2 } from "lucide-react";
-import { useAddRevenue } from "@/hooks/useCarDetails";
+import { useAddRevenue } from "@/hooks/useRevenues";
 
 interface AddRevenueDialogProps {
   carId: string;
@@ -16,11 +17,20 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
   const [formData, setFormData] = useState({
     description: "",
     value: "",
-    date: new Date().toISOString().split('T')[0],
-    type: "aluguel" as const,
+    date: "",
+    type: "",
   });
 
   const addRevenueMutation = useAddRevenue();
+
+  const resetForm = () => {
+    setFormData({
+      description: "",
+      value: "",
+      date: "",
+      type: "",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,23 +44,26 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
         type: formData.type,
       });
 
-      // Reset form
-      setFormData({
-        description: "",
-        value: "",
-        date: new Date().toISOString().split('T')[0],
-        type: "aluguel",
-      });
+      resetForm();
       setOpen(false);
     } catch (error) {
       console.error("Error adding revenue:", error);
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      resetForm();
+    }
+  };
+
+  const isLoading = addRevenueMutation.isPending;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="success">
+        <Button>
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Receita
         </Button>
@@ -58,6 +71,9 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Adicionar Receita</DialogTitle>
+          <DialogDescription>
+            Registre uma nova receita para este carro.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -66,7 +82,7 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Ex: Aluguel Janeiro"
+              placeholder="Ex: Aluguel mensal"
               required
             />
           </div>
@@ -97,9 +113,9 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="type">Tipo *</Label>
-            <Select value={formData.type} onValueChange={(value: typeof formData.type) => setFormData({ ...formData, type: value })}>
+            <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="aluguel">Aluguel</SelectItem>
@@ -110,12 +126,12 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={addRevenueMutation.isPending}>
-              {addRevenueMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Adicionar
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Adicionar Receita
             </Button>
           </div>
         </form>
