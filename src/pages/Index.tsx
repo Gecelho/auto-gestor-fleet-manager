@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CarCard } from "@/components/CarCard";
@@ -49,15 +50,18 @@ const Index = () => {
           onSearchChange={setSearchTerm}
         />
         
-        <FinancialSummary 
-          totalRevenue={totals.totalRevenue}
-          totalExpenses={totals.totalExpenses}
-          totalPendingBalance={totals.totalPendingBalance}
-          totalCars={cars?.length || 0}
-        />
+        {/* Financial Summary with improved background */}
+        <div className="mb-6 p-6 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(50,204,254,0.1) 0%, rgba(50,204,254,0.05) 100%)' }}>
+          <FinancialSummary 
+            totalRevenue={totals.totalRevenue}
+            totalExpenses={totals.totalExpenses}
+            totalPendingBalance={totals.totalPendingBalance}
+            totalCars={cars?.length || 0}
+          />
+        </div>
 
-        {/* Cars List */}
-        <div className="space-y-4" style={{ backgroundColor: 'var(--cars-background)', padding: '1.5rem', borderRadius: '12px' }}>
+        {/* Cars List with blue background for better contrast */}
+        <div className="space-y-4 p-6 rounded-xl" style={{ backgroundColor: 'rgba(50,204,254,1)', boxShadow: '0 8px 32px rgba(50,204,254,0.2)' }}>
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">
               Seus Carros ({filteredCars.length})

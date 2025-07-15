@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -111,21 +110,21 @@ export default function CarDetail() {
           </div>
         </Card>
 
-        {/* Financial Summary Cards */}
+        {/* Financial Summary Cards with improved background */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-4">
+          <Card className="p-4" style={{ background: 'linear-gradient(135deg, rgba(50,204,254,0.1) 0%, rgba(50,204,254,0.05) 100%)' }}>
             <p className="text-sm text-muted-foreground">Valor de Compra</p>
             <p className="text-xl font-bold">R$ {Number(car.purchase_value).toLocaleString("pt-BR")}</p>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%)' }}>
             <p className="text-sm text-muted-foreground">Total Receitas</p>
             <p className="text-xl font-bold text-success">R$ {totalRevenues.toLocaleString("pt-BR")}</p>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.05) 100%)' }}>
             <p className="text-sm text-muted-foreground">Total Despesas</p>
             <p className="text-xl font-bold text-danger">R$ {totalExpenses.toLocaleString("pt-BR")}</p>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(168,85,247,0.05) 100%)' }}>
             <p className="text-sm text-muted-foreground">Lucro Líquido</p>
             <p className={`text-xl font-bold ${netProfit >= 0 ? 'text-success' : 'text-danger'}`}>
               R$ {Math.abs(netProfit).toLocaleString("pt-BR")}
@@ -138,9 +137,9 @@ export default function CarDetail() {
           <MonthlyReportDialog carId={car.id} />
         </div>
 
-        {/* Tabs */}
+        {/* Tabs with improved styling */}
         <Tabs defaultValue="info" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-4" style={{ background: 'rgba(50,204,254,0.1)' }}>
             <TabsTrigger value="info">Informações</TabsTrigger>
             <TabsTrigger value="expenses">Despesas</TabsTrigger>
             <TabsTrigger value="revenues">Receitas</TabsTrigger>
@@ -148,7 +147,7 @@ export default function CarDetail() {
           </TabsList>
 
           <TabsContent value="info">
-            <Card className="p-6">
+            <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(50,204,254,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <h3 className="text-lg font-semibold mb-4">Informações Gerais</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -182,7 +181,7 @@ export default function CarDetail() {
           </TabsContent>
 
           <TabsContent value="expenses">
-            <Card className="p-6">
+            <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Despesas</h3>
                 <AddExpenseDialog carId={car.id} />
@@ -217,7 +216,7 @@ export default function CarDetail() {
           </TabsContent>
 
           <TabsContent value="revenues">
-            <Card className="p-6">
+            <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Receitas</h3>
                 <AddRevenueDialog carId={car.id} />
@@ -252,7 +251,7 @@ export default function CarDetail() {
           </TabsContent>
 
           <TabsContent value="driver">
-            <Card className="p-6">
+            <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Dados do Motorista</h3>
                 <EditDriverDialog driver={driver} carId={car.id} />
