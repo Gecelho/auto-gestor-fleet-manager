@@ -1,15 +1,21 @@
+
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Trash2, Phone, MessageCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Phone, MessageCircle, Loader2 } from "lucide-react";
 import { useCarDetails } from "@/hooks/useCarDetails";
 import { AddExpenseDialog } from "@/components/AddExpenseDialog";
 import { AddRevenueDialog } from "@/components/AddRevenueDialog";
 import { MonthlyReportDialog } from "@/components/MonthlyReportDialog";
 import { EditCarDialog } from "@/components/EditCarDialog";
 import { DeleteCarDialog } from "@/components/DeleteCarDialog";
+import { EditExpenseDialog } from "@/components/EditExpenseDialog";
+import { DeleteExpenseDialog } from "@/components/DeleteExpenseDialog";
+import { EditRevenueDialog } from "@/components/EditRevenueDialog";
+import { DeleteRevenueDialog } from "@/components/DeleteRevenueDialog";
+import { EditDriverDialog } from "@/components/EditDriverDialog";
 
 export default function CarDetail() {
   const navigate = useNavigate();
@@ -197,12 +203,11 @@ export default function CarDetail() {
                         <span className="font-bold text-danger">
                           R$ {Number(expense.value).toLocaleString("pt-BR")}
                         </span>
-                        <Button variant="ghost" size="icon">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <EditExpenseDialog expense={expense} />
+                        <DeleteExpenseDialog 
+                          expenseId={expense.id}
+                          expenseDescription={expense.description}
+                        />
                       </div>
                     </div>
                   ))
@@ -233,12 +238,11 @@ export default function CarDetail() {
                         <span className="font-bold text-success">
                           R$ {Number(revenue.value).toLocaleString("pt-BR")}
                         </span>
-                        <Button variant="ghost" size="icon">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <EditRevenueDialog revenue={revenue} />
+                        <DeleteRevenueDialog 
+                          revenueId={revenue.id}
+                          revenueDescription={revenue.description}
+                        />
                       </div>
                     </div>
                   ))
@@ -251,10 +255,7 @@ export default function CarDetail() {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Dados do Motorista</h3>
-                <Button variant="outline">
-                  <Edit className="w-4 h-4 mr-2" />
-                  Editar
-                </Button>
+                <EditDriverDialog driver={driver} carId={car.id} />
               </div>
               {driver ? (
                 <div className="space-y-4">
