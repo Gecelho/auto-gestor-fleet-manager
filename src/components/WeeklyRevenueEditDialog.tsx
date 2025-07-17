@@ -60,7 +60,8 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
     chartData.push({
       day: dayNames[i],
       value: parseFloat(dailyValues[dayKey]) || 0,
-      fullDate: format(day, 'dd/MM', { locale: ptBR })
+      fullDate: format(day, 'dd/MM', { locale: ptBR }),
+      dayNumber: format(day, 'dd')
     });
   }
 
@@ -114,32 +115,44 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
   };
 
   const isLoading = updateRevenueMutation.isPending || addRevenueMutation.isPending;
+  const totalWeekValue = chartData.reduce((sum, data) => sum + data.value, 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Editar Receitas da Semana - {format(week.weekStart, 'dd/MM', { locale: ptBR })} a {format(week.weekEnd, 'dd/MM/yyyy', { locale: ptBR })}
+          <DialogTitle className="text-center">
+            {format(week.weekStart, 'dd', { locale: ptBR })} de {format(week.weekStart, 'MMM', { locale: ptBR })}. - {format(week.weekEnd, 'dd', { locale: ptBR })} de {format(week.weekEnd, 'MMM', { locale: ptBR })}.
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 relative z-10">
+          {/* Valor total da semana */}
+          <div className="text-center">
+            <h2 className="text-3xl font-bold">
+              R$ {totalWeekValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </h2>
+          </div>
+
           {/* Gráfico */}
-          <div className="h-64">
-            <h3 className="text-lg font-semibold mb-4">Receitas por Dia da Semana</h3>
+          <div className="h-80 w-full">
             <ChartContainer
               config={{
                 value: {
                   label: "Receita",
-                  color: "hsl(var(--chart-1))",
+                  color: "#3B82F6",
                 },
               }}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis dataKey="day" />
-                  <YAxis />
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+                  <XAxis 
+                    dataKey="day" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 14, fill: '#666' }}
+                  />
+                  <YAxis hide />
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
@@ -150,33 +163,52 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
                       />
                     }
                   />
-                  <Bar dataKey="value" fill="var(--color-value)" />
+                  <Bar 
+                    dataKey="value" 
+                    fill="#3B82F6" 
+                    radius={[4, 4, 0, 0]}
+                    barSize={60}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
+
+            {/* Labels com números dos dias */}
+            <div className="flex justify-center mt-2 space-x-8">
+              {chartData.map((data, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-lg font-semibold">{data.dayNumber}</div>
+                  <div className="text-sm text-muted-foreground">{data.day}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Inputs para cada dia */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {chartData.map((dayData, index) => {
-              const day = addDays(week.weekStart, index);
-              const dayKey = format(day, 'yyyy-MM-dd');
-              
-              return (
-                <div key={dayKey} className="space-y-2">
-                  <Label>
-                    {dayData.day} ({dayData.fullDate})
-                  </Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={dailyValues[dayKey]}
-                    onChange={(e) => handleDailyValueChange(dayKey, e.target.value)}
-                    placeholder="0.00"
-                  />
-                </div>
-              );
-            })}
+          {/* Inputs para cada dia - em linha única */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-center">Editar valores por dia</h3>
+            <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-4">
+              {chartData.map((dayData, index) => {
+                const day = addDays(week.weekStart, index);
+                const dayKey = format(day, 'yyyy-MM-dd');
+                
+                return (
+                  <div key={dayKey} className="space-y-1">
+                    <Label className="text-xs font-medium text-center block">
+                      {dayData.day}
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={dailyValues[dayKey]}
+                      onChange={(e) => handleDailyValueChange(dayKey, e.target.value)}
+                      placeholder="0.00"
+                      className="text-center text-sm h-8"
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Botões */}
