@@ -15,6 +15,7 @@ import { DeleteExpenseDialog } from "@/components/DeleteExpenseDialog";
 import { EditRevenueDialog } from "@/components/EditRevenueDialog";
 import { DeleteRevenueDialog } from "@/components/DeleteRevenueDialog";
 import { EditDriverDialog } from "@/components/EditDriverDialog";
+import { WeeklyRevenueList } from "@/components/WeeklyRevenueList";
 
 export default function CarDetail() {
   const navigate = useNavigate();
@@ -218,35 +219,10 @@ export default function CarDetail() {
           <TabsContent value="revenues">
             <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Receitas</h3>
+                <h3 className="text-lg font-semibold">Receitas por Semana</h3>
                 <AddRevenueDialog carId={car.id} />
               </div>
-              <div className="space-y-3">
-                {revenues.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">Nenhuma receita cadastrada</p>
-                ) : (
-                  revenues.map((revenue) => (
-                    <div key={revenue.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div>
-                        <p className="font-medium">{revenue.description}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(revenue.date).toLocaleDateString("pt-BR")} • {revenue.type}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-bold text-success">
-                          R$ {Number(revenue.value).toLocaleString("pt-BR")}
-                        </span>
-                        <EditRevenueDialog revenue={revenue} />
-                        <DeleteRevenueDialog 
-                          revenueId={revenue.id}
-                          revenueDescription={revenue.description}
-                        />
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+              <WeeklyRevenueList revenues={revenues} carId={car.id} />
             </Card>
           </TabsContent>
 

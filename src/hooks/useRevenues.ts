@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { startOfWeek, endOfWeek, format } from "date-fns";
 
 interface Revenue {
   id: string;
@@ -38,6 +39,13 @@ export const useAddRevenue = () => {
 
   return useMutation({
     mutationFn: async (revenueData: AddRevenueData) => {
+      // Verificar se a data está dentro de uma semana específica
+      const revenueDate = new Date(revenueData.date);
+      const weekStart = startOfWeek(revenueDate, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(revenueDate, { weekStartsOn: 1 });
+
+      console.log(`Adding revenue for date ${revenueData.date} in week ${format(weekStart, 'yyyy-MM-dd')} to ${format(weekEnd, 'yyyy-MM-dd')}`);
+
       const { data, error } = await supabase
         .from("revenues")
         .insert(revenueData)
