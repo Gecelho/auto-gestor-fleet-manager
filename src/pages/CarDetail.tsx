@@ -1,3 +1,4 @@
+
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -169,7 +170,7 @@ export default function CarDetail() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Falta para Quitar</p>
-                  <p className="font-medium text-[#32ccfe]">R$ {remainingBalance.toLocaleString("pt-BR")}</p>
+                  <p className="font-medium text-[#3B82F6]">R$ {remainingBalance.toLocaleString("pt-BR")}</p>
                 </div>
               </div>
               {car.notes && (
