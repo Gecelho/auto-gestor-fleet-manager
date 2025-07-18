@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -144,7 +145,7 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
               }}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                   <XAxis 
                     dataKey="day" 
                     axisLine={false}
@@ -171,10 +172,21 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
+
+            {/* Labels com números dos dias */}
+            <div className="flex justify-center mt-2 space-x-8">
+              {chartData.map((data, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-lg font-semibold">{data.dayNumber}</div>
+                  <div className="text-sm text-muted-foreground">{data.day}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Inputs para cada dia - com z-index adequado */}
           <div className="space-y-4 relative z-20">
+            <h3 className="text-lg font-semibold text-center">Editar valores por dia</h3>
             <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-4">
               {chartData.map((dayData, index) => {
                 const day = addDays(week.weekStart, index);
@@ -182,6 +194,9 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
                 
                 return (
                   <div key={dayKey} className="space-y-2 relative z-30">
+                    <Label className="text-xs font-medium text-center block">
+                      {dayData.day}
+                    </Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -190,9 +205,6 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
                       placeholder="0.00"
                       className="text-center text-sm h-10 relative z-40"
                     />
-                    <Label className="text-xs font-medium text-center block text-muted-foreground">
-                      {dayData.day}
-                    </Label>
                   </div>
                 );
               })}
