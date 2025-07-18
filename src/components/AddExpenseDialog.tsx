@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Plus, Loader2 } from "lucide-react";
 import { useAddExpense } from "@/hooks/useExpenses";
 
@@ -119,10 +118,9 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="manutencao">Manutenção</SelectItem>
-                <SelectItem value="combustivel">Combustível</SelectItem>
+                <SelectItem value="manutenção">Manutenção</SelectItem>
+                <SelectItem value="documentos">Documentos</SelectItem>
                 <SelectItem value="seguro">Seguro</SelectItem>
-                <SelectItem value="documentacao">Documentação</SelectItem>
                 <SelectItem value="outros">Outros</SelectItem>
               </SelectContent>
             </Select>

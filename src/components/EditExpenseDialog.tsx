@@ -7,7 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Loader2 } from "lucide-react";
 import { useUpdateExpense } from "@/hooks/useExpenses";
-import { Expense } from "@/types/database";
+
+interface Expense {
+  id: string;
+  car_id: string;
+  description: string;
+  value: number;
+  date: string;
+  category: string;
+  created_at: string;
+}
 
 interface EditExpenseDialogProps {
   expense: Expense;
@@ -110,15 +119,14 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="category">Categoria *</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value as typeof formData.category })}>
+            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="manutencao">Manutenção</SelectItem>
-                <SelectItem value="combustivel">Combustível</SelectItem>
+                <SelectItem value="manutenção">Manutenção</SelectItem>
+                <SelectItem value="documentos">Documentos</SelectItem>
                 <SelectItem value="seguro">Seguro</SelectItem>
-                <SelectItem value="documentacao">Documentação</SelectItem>
                 <SelectItem value="outros">Outros</SelectItem>
               </SelectContent>
             </Select>
