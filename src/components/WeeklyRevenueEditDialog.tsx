@@ -126,7 +126,7 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 relative z-10">
+        <div className="space-y-6">
           {/* Valor total da semana */}
           <div className="text-center">
             <h2 className="text-3xl font-bold">
@@ -135,7 +135,7 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
           </div>
 
           {/* Gráfico */}
-          <div className="h-80 w-full">
+          <div className="h-80 w-full relative z-10">
             <ChartContainer
               config={{
                 value: {
@@ -184,8 +184,8 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
             </div>
           </div>
 
-          {/* Inputs para cada dia - em linha única */}
-          <div className="space-y-4">
+          {/* Inputs para cada dia - com z-index adequado */}
+          <div className="space-y-4 relative z-20">
             <h3 className="text-lg font-semibold text-center">Editar valores por dia</h3>
             <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-4">
               {chartData.map((dayData, index) => {
@@ -193,7 +193,7 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
                 const dayKey = format(day, 'yyyy-MM-dd');
                 
                 return (
-                  <div key={dayKey} className="space-y-1">
+                  <div key={dayKey} className="space-y-2 relative z-30">
                     <Label className="text-xs font-medium text-center block">
                       {dayData.day}
                     </Label>
@@ -203,7 +203,7 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
                       value={dailyValues[dayKey]}
                       onChange={(e) => handleDailyValueChange(dayKey, e.target.value)}
                       placeholder="0.00"
-                      className="text-center text-sm h-8"
+                      className="text-center text-sm h-10 relative z-40"
                     />
                   </div>
                 );
@@ -212,7 +212,7 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
           </div>
 
           {/* Botões */}
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex justify-end space-x-2 pt-6 relative z-20">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
