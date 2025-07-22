@@ -52,16 +52,16 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
   const updateRevenueMutation = useUpdateRevenue();
   const addRevenueMutation = useAddRevenue();
 
-  // Preparar dados para o gráfico
+  // Preparar dados para o gráfico com labels combinadas
   const chartData = [];
   for (let i = 0; i < 7; i++) {
     const day = addDays(week.weekStart, i);
     const dayKey = format(day, 'yyyy-MM-dd');
+    const dayNumber = format(day, 'dd');
     chartData.push({
-      day: dayNames[i],
+      day: `${dayNames[i]} ${dayNumber}`, // Label combinada como "Seg 19"
       value: parseFloat(dailyValues[dayKey]) || 0,
       fullDate: format(day, 'dd/MM', { locale: ptBR }),
-      dayNumber: format(day, 'dd')
     });
   }
 
@@ -115,42 +115,34 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
   };
 
   const isLoading = updateRevenueMutation.isPending || addRevenueMutation.isPending;
-  const totalWeekValue = chartData.reduce((sum, data) => sum + data.value, 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-center">
+          <DialogTitle className="text-center text-lg">
             {format(week.weekStart, 'dd', { locale: ptBR })} de {format(week.weekStart, 'MMM', { locale: ptBR })}. - {format(week.weekEnd, 'dd', { locale: ptBR })} de {format(week.weekEnd, 'MMM', { locale: ptBR })}.
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Valor total da semana */}
-          <div className="text-center">
-            <h2 className="text-3xl font-bold">
-              R$ {totalWeekValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-            </h2>
-          </div>
-
-          {/* Gráfico */}
-          <div className="h-80 w-full relative z-10">
+        <div className="space-y-4">
+          {/* Gráfico compacto */}
+          <div className="h-20 w-full">
             <ChartContainer
               config={{
                 value: {
                   label: "Receita",
-                  color: "#3B82F6",
+                  color: "#4285F4",
                 },
               }}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
                   <XAxis 
                     dataKey="day" 
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 14, fill: '#666' }}
+                    tick={{ fontSize: 10, fill: '#666' }}
                   />
                   <YAxis hide />
                   <ChartTooltip
@@ -165,36 +157,25 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
                   />
                   <Bar 
                     dataKey="value" 
-                    fill="#3B82F6" 
-                    radius={[4, 4, 0, 0]}
-                    barSize={60}
+                    fill="#4285F4" 
+                    radius={[2, 2, 0, 0]}
+                    barSize={12}
                   />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
-
-            {/* Labels com números dos dias */}
-            <div className="flex justify-center mt-2 space-x-8">
-              {chartData.map((data, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-lg font-semibold">{data.dayNumber}</div>
-                  <div className="text-sm text-muted-foreground">{data.day}</div>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Inputs para cada dia - com z-index adequado */}
-          <div className="space-y-4 relative z-20">
-            <h3 className="text-lg font-semibold text-center">Editar valores por dia</h3>
-            <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-4">
+          {/* Inputs organizados de forma compacta */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-3">
               {chartData.map((dayData, index) => {
                 const day = addDays(week.weekStart, index);
                 const dayKey = format(day, 'yyyy-MM-dd');
                 
                 return (
-                  <div key={dayKey} className="space-y-2 relative z-30">
-                    <Label className="text-xs font-medium text-center block">
+                  <div key={dayKey} className="space-y-1">
+                    <Label className="text-xs font-medium text-center block text-muted-foreground">
                       {dayData.day}
                     </Label>
                     <Input
@@ -203,7 +184,7 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
                       value={dailyValues[dayKey]}
                       onChange={(e) => handleDailyValueChange(dayKey, e.target.value)}
                       placeholder="0.00"
-                      className="text-center text-sm h-10 relative z-40"
+                      className="text-center text-sm h-8"
                     />
                   </div>
                 );
@@ -212,7 +193,7 @@ export function WeeklyRevenueEditDialog({ week, carId, open, onOpenChange }: Wee
           </div>
 
           {/* Botões */}
-          <div className="flex justify-end space-x-2 pt-6 relative z-20">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
