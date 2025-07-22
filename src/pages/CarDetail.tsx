@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,7 +15,7 @@ import { DeleteExpenseDialog } from "@/components/DeleteExpenseDialog";
 import { EditRevenueDialog } from "@/components/EditRevenueDialog";
 import { DeleteRevenueDialog } from "@/components/DeleteRevenueDialog";
 import { EditDriverDialog } from "@/components/EditDriverDialog";
-import { WeeklyRevenueList } from "@/components/WeeklyRevenueList";
+import { WeeklyRevenueInlineView } from "@/components/WeeklyRevenueInlineView";
 
 export default function CarDetail() {
   const navigate = useNavigate();
@@ -223,7 +222,7 @@ export default function CarDetail() {
                 <h3 className="text-lg font-semibold">Receitas por Semana</h3>
                 <AddRevenueDialog carId={car.id} />
               </div>
-              <WeeklyRevenueList revenues={revenues} carId={car.id} />
+              <WeeklyRevenueInlineView revenues={revenues} carId={car.id} />
             </Card>
           </TabsContent>
 
