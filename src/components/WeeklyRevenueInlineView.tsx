@@ -69,7 +69,6 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
     return weeks;
   }, {});
 
-  // Converter para array e ordenar por data
   const sortedWeeks = Object.values(weeklyData).sort((a, b) => 
     b.weekStart.getTime() - a.weekStart.getTime()
   );
@@ -113,11 +112,9 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
         const existingValue = week.dailyValues[dayKey] || 0;
 
         if (newValue !== existingValue) {
-          // Encontrar receitas existentes para este dia
           const dayRevenues = week.revenues.filter(r => r.date === dayKey);
           
           if (dayRevenues.length > 0) {
-            // Atualizar a primeira receita do dia
             const revenue = dayRevenues[0];
             await updateRevenueMutation.mutateAsync({
               id: revenue.id,
@@ -127,7 +124,6 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
               type: revenue.type
             });
           } else if (newValue > 0) {
-            // Criar nova receita para este dia
             await addRevenueMutation.mutateAsync({
               car_id: carId,
               description: `Receita ${format(day, 'dd/MM', { locale: ptBR })}`,
@@ -152,7 +148,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {sortedWeeks.map((week) => {
         const weekKey = format(week.weekStart, 'yyyy-MM-dd');
         
@@ -179,19 +175,19 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
         }
 
         return (
-          <Card key={weekKey} className="p-4">
-            {/* Header da semana */}
-            <div className="mb-4">
-              <h4 className="text-lg font-semibold text-center">
+          <Card key={weekKey} className="p-3">
+            {/* Header da semana - mais compacto */}
+            <div className="mb-3">
+              <h4 className="text-base font-semibold text-center">
                 {format(week.weekStart, 'dd', { locale: ptBR })} de {format(week.weekStart, 'MMM', { locale: ptBR })}. - {format(week.weekEnd, 'dd', { locale: ptBR })} de {format(week.weekEnd, 'MMM', { locale: ptBR })}.
               </h4>
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 {week.revenues.length} receita(s) • Total: R$ {week.totalValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </p>
             </div>
 
-            {/* Gráfico compacto */}
-            <div className="h-20 w-full mb-4">
+            {/* Gráfico muito mais compacto */}
+            <div className="h-8 w-full mb-3">
               <ChartContainer
                 config={{
                   value: {
@@ -201,12 +197,18 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                 }}
               >
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
+                  <BarChart 
+                    data={chartData} 
+                    margin={{ top: 2, right: 4, left: 4, bottom: 20 }}
+                    barCategoryGap="10%"
+                  >
                     <XAxis 
                       dataKey="day" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: '#666' }}
+                      tick={{ fontSize: 8, fill: '#666' }}
+                      interval={0}
+                      height={16}
                     />
                     <YAxis hide />
                     <ChartTooltip
@@ -222,8 +224,9 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                     <Bar 
                       dataKey="value" 
                       fill="#4285F4" 
-                      radius={[2, 2, 0, 0]}
-                      barSize={12}
+                      radius={[1, 1, 0, 0]}
+                      barSize={8}
+                      maxBarSize={8}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -231,8 +234,8 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
             </div>
 
             {/* Inputs organizados de forma compacta */}
-            <div className="space-y-3">
-              <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-3">
+            <div className="space-y-2">
+              <div className="grid grid-cols-7 gap-1 max-md:grid-cols-2 max-md:gap-2">
                 {chartData.map((dayData, index) => {
                   const day = addDays(week.weekStart, index);
                   const dayKey = format(day, 'yyyy-MM-dd');
@@ -248,7 +251,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                         value={editingWeeks[weekKey]?.[dayKey] || '0'}
                         onChange={(e) => handleDailyValueChange(weekKey, dayKey, e.target.value)}
                         placeholder="0.00"
-                        className="text-center text-sm h-8"
+                        className="text-center text-xs h-7"
                       />
                     </div>
                   );
@@ -256,7 +259,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
               </div>
 
               {/* Botão de salvar */}
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-end pt-1">
                 <Button 
                   onClick={() => handleSaveWeek(weekKey, week)} 
                   disabled={loadingWeeks[weekKey]}
