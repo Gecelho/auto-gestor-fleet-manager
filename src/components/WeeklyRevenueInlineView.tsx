@@ -8,7 +8,9 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { format, startOfWeek, endOfWeek, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useUpdateRevenue, useAddRevenue } from "@/hooks/useRevenues";
-import { Loader2, Edit } from "lucide-react";
+import { Loader2, Edit, Trash2 } from "lucide-react";
+import { EditRevenueDialog } from "@/components/EditRevenueDialog";
+import { DeleteRevenueDialog } from "@/components/DeleteRevenueDialog";
 
 interface Revenue {
   id: string;
@@ -39,15 +41,17 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
   const [editingWeeks, setEditingWeeks] = useState<{ [key: string]: { [key: string]: string } }>({});
   const [loadingWeeks, setLoadingWeeks] = useState<{ [key: string]: boolean }>({});
   const [showingInputs, setShowingInputs] = useState<{ [key: string]: boolean }>({});
+  const [selectedRevenue, setSelectedRevenue] = useState<Revenue | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const updateRevenueMutation = useUpdateRevenue();
   const addRevenueMutation = useAddRevenue();
 
-  // Agrupar receitas por semana
   const weeklyData = revenues.reduce((weeks: { [key: string]: WeekData }, revenue) => {
     const revenueDate = parseISO(revenue.date);
-    const weekStart = startOfWeek(revenueDate, { weekStartsOn: 1 }); // Segunda-feira
-    const weekEnd = endOfWeek(revenueDate, { weekStartsOn: 1 }); // Domingo
+    const weekStart = startOfWeek(revenueDate, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(revenueDate, { weekStartsOn: 1 });
     const weekKey = format(weekStart, 'yyyy-MM-dd');
 
     if (!weeks[weekKey]) {
@@ -114,7 +118,6 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
     setLoadingWeeks(prev => ({ ...prev, [weekKey]: true }));
 
     try {
-      // Para cada dia da semana, verificar se precisa atualizar ou criar receita
       for (let i = 0; i < 7; i++) {
         const day = addDays(week.weekStart, i);
         const dayKey = format(day, 'yyyy-MM-dd');
@@ -152,6 +155,16 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
     }
   };
 
+  const handleEditRevenue = (revenue: Revenue) => {
+    setSelectedRevenue(revenue);
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteRevenue = (revenue: Revenue) => {
+    setSelectedRevenue(revenue);
+    setShowDeleteDialog(true);
+  };
+
   if (sortedWeeks.length === 0) {
     return (
       <p className="text-muted-foreground text-center py-8">Nenhuma receita cadastrada</p>
@@ -163,7 +176,6 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
       {sortedWeeks.map((week) => {
         const weekKey = format(week.weekStart, 'yyyy-MM-dd');
         
-        // Preparar dados para o gráfico
         const chartData = [];
         for (let i = 0; i < 7; i++) {
           const day = addDays(week.weekStart, i);
@@ -182,7 +194,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
 
         return (
           <Card key={weekKey} className="p-4">
-            {/* Header da semana com botão de editar */}
+            {/* Header da semana com botão de editar menor */}
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h4 className="text-base font-semibold">
@@ -194,15 +206,15 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
               </div>
               <Button 
                 variant="outline" 
-                size="sm" 
+                size="icon" 
+                className="h-8 w-8"
                 onClick={() => handleEditToggle(weekKey, week)}
               >
-                <Edit className="w-4 h-4 mr-2" />
-                {showingInputs[weekKey] ? 'Cancelar' : 'Editar'}
+                <Edit className="w-4 h-4" />
               </Button>
             </div>
 
-            {/* Gráfico muito mais compacto */}
+            {/* Gráfico ainda mais compacto com melhor espaçamento */}
             <div className="h-16 w-full mb-4">
               <ChartContainer
                 config={{
@@ -215,16 +227,16 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={chartData} 
-                    margin={{ top: 5, right: 2, left: 2, bottom: 25 }}
-                    barCategoryGap="15%"
+                    margin={{ top: 2, right: 2, left: 2, bottom: 28 }}
+                    barCategoryGap="20%"
                   >
                     <XAxis 
                       dataKey="day" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 9, fill: '#666' }}
+                      tick={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
                       interval={0}
-                      height={20}
+                      height={25}
                     />
                     <YAxis hide />
                     <ChartTooltip
@@ -241,15 +253,53 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                       dataKey="value" 
                       fill="#4285F4" 
                       radius={[1, 1, 0, 0]}
-                      barSize={6}
-                      maxBarSize={6}
+                      barSize={4}
+                      maxBarSize={4}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </div>
 
-            {/* Inputs para edição - só aparecem quando showingInputs[weekKey] é true */}
+            {/* Lista de receitas individuais com botões de edição */}
+            {week.revenues.length > 0 && (
+              <div className="space-y-2 mb-4">
+                <h5 className="text-sm font-medium text-muted-foreground">Receitas da semana:</h5>
+                {week.revenues.map((revenue) => (
+                  <div key={revenue.id} className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{revenue.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(parseISO(revenue.date), 'dd/MM/yyyy', { locale: ptBR })} • {revenue.type}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-bold text-success">
+                        R$ {Number(revenue.value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleEditRevenue(revenue)}
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleDeleteRevenue(revenue)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Inputs para edição rápida - só aparecem quando showingInputs[weekKey] é true */}
             {showingInputs[weekKey] && (
               <div className="space-y-3 border-t pt-4">
                 <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-3">
@@ -259,7 +309,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                     
                     return (
                       <div key={dayKey} className="space-y-1">
-                        <Label className="text-xs font-medium text-center block text-muted-foreground">
+                        <Label className="text-xs font-bold text-center block text-foreground">
                           {dayData.day}
                         </Label>
                         <Input
@@ -275,7 +325,6 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                   })}
                 </div>
 
-                {/* Botão de salvar */}
                 <div className="flex justify-end pt-2">
                   <Button 
                     onClick={() => handleSaveWeek(weekKey, week)} 
@@ -291,6 +340,29 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
           </Card>
         );
       })}
+
+      {/* Dialogs de edição e exclusão */}
+      {selectedRevenue && (
+        <>
+          <EditRevenueDialog
+            revenue={selectedRevenue}
+            open={showEditDialog}
+            onOpenChange={(open) => {
+              setShowEditDialog(open);
+              if (!open) setSelectedRevenue(null);
+            }}
+          />
+          <DeleteRevenueDialog
+            revenueId={selectedRevenue.id}
+            revenueDescription={selectedRevenue.description}
+            open={showDeleteDialog}
+            onOpenChange={(open) => {
+              setShowDeleteDialog(open);
+              if (!open) setSelectedRevenue(null);
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

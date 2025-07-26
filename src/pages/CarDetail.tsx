@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Phone, MessageCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Phone, MessageCircle, Loader2, Plus } from "lucide-react";
 import { useCarDetails } from "@/hooks/useCarDetails";
 import { AddExpenseDialog } from "@/components/AddExpenseDialog";
 import { AddRevenueDialog } from "@/components/AddRevenueDialog";
@@ -54,7 +54,6 @@ export default function CarDetail() {
     alugado: { label: "Alugado", className: "bg-info text-info-foreground" }
   };
 
-  // Use only valid images from Supabase or placeholder
   const imageUrl = car.image_url && car.image_url.includes('supabase') ? car.image_url : "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
 
   const handleDeleteSuccess = () => {
@@ -85,7 +84,6 @@ export default function CarDetail() {
             </div>
           </div>
           
-          {/* Action Buttons */}
           <div className="flex items-center space-x-2">
             <EditCarDialog car={car} />
             <DeleteCarDialog 
@@ -111,7 +109,7 @@ export default function CarDetail() {
           </div>
         </Card>
 
-        {/* Financial Summary Cards with improved background */}
+        {/* Financial Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card className="p-4" style={{ background: 'linear-gradient(135deg, rgba(50,204,254,0.1) 0%, rgba(50,204,254,0.05) 100%)' }}>
             <p className="text-sm text-muted-foreground">Valor de Compra</p>
@@ -138,7 +136,7 @@ export default function CarDetail() {
           <MonthlyReportDialog carId={car.id} />
         </div>
 
-        {/* Tabs with improved styling */}
+        {/* Tabs */}
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4" style={{ background: 'rgba(50,204,254,0.1)' }}>
             <TabsTrigger value="info">Informações</TabsTrigger>
@@ -185,7 +183,14 @@ export default function CarDetail() {
             <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Despesas</h3>
-                <AddExpenseDialog carId={car.id} />
+                <div className="flex items-center">
+                  <AddExpenseDialog carId={car.id}>
+                    <Button size="sm" className="h-8">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Adicionar
+                    </Button>
+                  </AddExpenseDialog>
+                </div>
               </div>
               <div className="space-y-3">
                 {expenses.length === 0 ? (
@@ -220,7 +225,14 @@ export default function CarDetail() {
             <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Receitas por Semana</h3>
-                <AddRevenueDialog carId={car.id} />
+                <div className="flex items-center">
+                  <AddRevenueDialog carId={car.id}>
+                    <Button size="sm" className="h-8">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Adicionar
+                    </Button>
+                  </AddRevenueDialog>
+                </div>
               </div>
               <WeeklyRevenueInlineView revenues={revenues} carId={car.id} />
             </Card>
