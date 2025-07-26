@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -207,15 +208,15 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="h-8 w-8"
+                className="h-6 w-6"
                 onClick={() => handleEditToggle(weekKey, week)}
               >
-                <Edit className="w-4 h-4" />
+                <Edit className="w-3 h-3" />
               </Button>
             </div>
 
-            {/* Gráfico ainda mais compacto com melhor espaçamento */}
-            <div className="h-16 w-full mb-4">
+            {/* Gráfico ajustado com melhor espaçamento */}
+            <div className="h-20 w-full mb-4">
               <ChartContainer
                 config={{
                   value: {
@@ -227,16 +228,16 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={chartData} 
-                    margin={{ top: 2, right: 2, left: 2, bottom: 28 }}
-                    barCategoryGap="20%"
+                    margin={{ top: 5, right: 2, left: 2, bottom: 35 }}
+                    barCategoryGap="15%"
                   >
                     <XAxis 
                       dataKey="day" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
+                      tick={{ fontSize: 9, fill: '#000', fontWeight: 'bold' }}
                       interval={0}
-                      height={25}
+                      height={30}
                     />
                     <YAxis hide />
                     <ChartTooltip
@@ -253,8 +254,8 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                       dataKey="value" 
                       fill="#4285F4" 
                       radius={[1, 1, 0, 0]}
-                      barSize={4}
-                      maxBarSize={4}
+                      barSize={6}
+                      maxBarSize={6}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -345,7 +346,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
       {selectedRevenue && (
         <>
           <EditRevenueDialog
-            revenue={selectedRevenue}
+            revenue={selectedRevenue as any}
             open={showEditDialog}
             onOpenChange={(open) => {
               setShowEditDialog(open);

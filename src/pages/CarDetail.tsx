@@ -185,8 +185,8 @@ export default function CarDetail() {
                 <h3 className="text-lg font-semibold">Despesas</h3>
                 <div className="flex items-center">
                   <AddExpenseDialog carId={car.id}>
-                    <Button size="sm" className="h-8">
-                      <Plus className="w-4 h-4 mr-1" />
+                    <Button size="sm" className="h-7 px-3 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />
                       Adicionar
                     </Button>
                   </AddExpenseDialog>
@@ -227,8 +227,8 @@ export default function CarDetail() {
                 <h3 className="text-lg font-semibold">Receitas por Semana</h3>
                 <div className="flex items-center">
                   <AddRevenueDialog carId={car.id}>
-                    <Button size="sm" className="h-8">
-                      <Plus className="w-4 h-4 mr-1" />
+                    <Button size="sm" className="h-7 px-3 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />
                       Adicionar
                     </Button>
                   </AddRevenueDialog>
