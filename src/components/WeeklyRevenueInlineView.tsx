@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { format, startOfWeek, endOfWeek, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useUpdateRevenue, useAddRevenue } from "@/hooks/useRevenues";
-import { Loader2 } from "lucide-react";
+import { Loader2, Edit } from "lucide-react";
 
 interface Revenue {
   id: string;
@@ -39,6 +38,7 @@ const dayNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInlineViewProps) {
   const [editingWeeks, setEditingWeeks] = useState<{ [key: string]: { [key: string]: string } }>({});
   const [loadingWeeks, setLoadingWeeks] = useState<{ [key: string]: boolean }>({});
+  const [showingInputs, setShowingInputs] = useState<{ [key: string]: boolean }>({});
 
   const updateRevenueMutation = useUpdateRevenue();
   const addRevenueMutation = useAddRevenue();
@@ -98,6 +98,16 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
     }));
   };
 
+  const handleEditToggle = (weekKey: string, week: WeekData) => {
+    if (!showingInputs[weekKey]) {
+      initializeEditingWeek(weekKey, week);
+    }
+    setShowingInputs(prev => ({
+      ...prev,
+      [weekKey]: !prev[weekKey]
+    }));
+  };
+
   const handleSaveWeek = async (weekKey: string, week: WeekData) => {
     if (!editingWeeks[weekKey]) return;
 
@@ -138,6 +148,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
       console.error('Error saving weekly revenue:', error);
     } finally {
       setLoadingWeeks(prev => ({ ...prev, [weekKey]: false }));
+      setShowingInputs(prev => ({ ...prev, [weekKey]: false }));
     }
   };
 
@@ -169,25 +180,30 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
           });
         }
 
-        // Inicializar valores de edição se necessário
-        if (!editingWeeks[weekKey]) {
-          initializeEditingWeek(weekKey, week);
-        }
-
         return (
-          <Card key={weekKey} className="p-3">
-            {/* Header da semana - mais compacto */}
-            <div className="mb-3">
-              <h4 className="text-base font-semibold text-center">
-                {format(week.weekStart, 'dd', { locale: ptBR })} de {format(week.weekStart, 'MMM', { locale: ptBR })}. - {format(week.weekEnd, 'dd', { locale: ptBR })} de {format(week.weekEnd, 'MMM', { locale: ptBR })}.
-              </h4>
-              <p className="text-xs text-muted-foreground text-center">
-                {week.revenues.length} receita(s) • Total: R$ {week.totalValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-              </p>
+          <Card key={weekKey} className="p-4">
+            {/* Header da semana com botão de editar */}
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h4 className="text-base font-semibold">
+                  {format(week.weekStart, 'dd', { locale: ptBR })} de {format(week.weekStart, 'MMM', { locale: ptBR })}. - {format(week.weekEnd, 'dd', { locale: ptBR })} de {format(week.weekEnd, 'MMM', { locale: ptBR })}.
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {week.revenues.length} receita(s) • Total: R$ {week.totalValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleEditToggle(weekKey, week)}
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                {showingInputs[weekKey] ? 'Cancelar' : 'Editar'}
+              </Button>
             </div>
 
             {/* Gráfico muito mais compacto */}
-            <div className="h-8 w-full mb-3">
+            <div className="h-16 w-full mb-4">
               <ChartContainer
                 config={{
                   value: {
@@ -199,16 +215,16 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={chartData} 
-                    margin={{ top: 2, right: 4, left: 4, bottom: 20 }}
-                    barCategoryGap="10%"
+                    margin={{ top: 5, right: 2, left: 2, bottom: 25 }}
+                    barCategoryGap="15%"
                   >
                     <XAxis 
                       dataKey="day" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 8, fill: '#666' }}
+                      tick={{ fontSize: 9, fill: '#666' }}
                       interval={0}
-                      height={16}
+                      height={20}
                     />
                     <YAxis hide />
                     <ChartTooltip
@@ -225,51 +241,53 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                       dataKey="value" 
                       fill="#4285F4" 
                       radius={[1, 1, 0, 0]}
-                      barSize={8}
-                      maxBarSize={8}
+                      barSize={6}
+                      maxBarSize={6}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </div>
 
-            {/* Inputs organizados de forma compacta */}
-            <div className="space-y-2">
-              <div className="grid grid-cols-7 gap-1 max-md:grid-cols-2 max-md:gap-2">
-                {chartData.map((dayData, index) => {
-                  const day = addDays(week.weekStart, index);
-                  const dayKey = format(day, 'yyyy-MM-dd');
-                  
-                  return (
-                    <div key={dayKey} className="space-y-1">
-                      <Label className="text-xs font-medium text-center block text-muted-foreground">
-                        {dayData.day}
-                      </Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={editingWeeks[weekKey]?.[dayKey] || '0'}
-                        onChange={(e) => handleDailyValueChange(weekKey, dayKey, e.target.value)}
-                        placeholder="0.00"
-                        className="text-center text-xs h-7"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+            {/* Inputs para edição - só aparecem quando showingInputs[weekKey] é true */}
+            {showingInputs[weekKey] && (
+              <div className="space-y-3 border-t pt-4">
+                <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-3">
+                  {chartData.map((dayData, index) => {
+                    const day = addDays(week.weekStart, index);
+                    const dayKey = format(day, 'yyyy-MM-dd');
+                    
+                    return (
+                      <div key={dayKey} className="space-y-1">
+                        <Label className="text-xs font-medium text-center block text-muted-foreground">
+                          {dayData.day}
+                        </Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={editingWeeks[weekKey]?.[dayKey] || '0'}
+                          onChange={(e) => handleDailyValueChange(weekKey, dayKey, e.target.value)}
+                          placeholder="0.00"
+                          className="text-center text-xs h-7"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
 
-              {/* Botão de salvar */}
-              <div className="flex justify-end pt-1">
-                <Button 
-                  onClick={() => handleSaveWeek(weekKey, week)} 
-                  disabled={loadingWeeks[weekKey]}
-                  size="sm"
-                >
-                  {loadingWeeks[weekKey] && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Salvar Alterações
-                </Button>
+                {/* Botão de salvar */}
+                <div className="flex justify-end pt-2">
+                  <Button 
+                    onClick={() => handleSaveWeek(weekKey, week)} 
+                    disabled={loadingWeeks[weekKey]}
+                    size="sm"
+                  >
+                    {loadingWeeks[weekKey] && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Salvar Alterações
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </Card>
         );
       })}
