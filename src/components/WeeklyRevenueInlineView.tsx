@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,9 +41,6 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
   const [editingWeeks, setEditingWeeks] = useState<{ [key: string]: { [key: string]: string } }>({});
   const [loadingWeeks, setLoadingWeeks] = useState<{ [key: string]: boolean }>({});
   const [showingInputs, setShowingInputs] = useState<{ [key: string]: boolean }>({});
-  const [selectedRevenue, setSelectedRevenue] = useState<Revenue | null>(null);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const updateRevenueMutation = useUpdateRevenue();
   const addRevenueMutation = useAddRevenue();
@@ -154,16 +150,6 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
       setLoadingWeeks(prev => ({ ...prev, [weekKey]: false }));
       setShowingInputs(prev => ({ ...prev, [weekKey]: false }));
     }
-  };
-
-  const handleEditRevenue = (revenue: Revenue) => {
-    setSelectedRevenue(revenue);
-    setShowEditDialog(true);
-  };
-
-  const handleDeleteRevenue = (revenue: Revenue) => {
-    setSelectedRevenue(revenue);
-    setShowDeleteDialog(true);
   };
 
   if (sortedWeeks.length === 0) {
@@ -278,22 +264,11 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                       <span className="text-sm font-bold text-success">
                         R$ {Number(revenue.value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                       </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => handleEditRevenue(revenue)}
-                      >
-                        <Edit className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => handleDeleteRevenue(revenue)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                      <EditRevenueDialog revenue={revenue as any} />
+                      <DeleteRevenueDialog 
+                        revenueId={revenue.id}
+                        revenueDescription={revenue.description}
+                      />
                     </div>
                   </div>
                 ))}
@@ -341,29 +316,6 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
           </Card>
         );
       })}
-
-      {/* Dialogs de edição e exclusão */}
-      {selectedRevenue && (
-        <>
-          <EditRevenueDialog
-            revenue={selectedRevenue as any}
-            open={showEditDialog}
-            onOpenChange={(open) => {
-              setShowEditDialog(open);
-              if (!open) setSelectedRevenue(null);
-            }}
-          />
-          <DeleteRevenueDialog
-            revenueId={selectedRevenue.id}
-            revenueDescription={selectedRevenue.description}
-            open={showDeleteDialog}
-            onOpenChange={(open) => {
-              setShowDeleteDialog(open);
-              if (!open) setSelectedRevenue(null);
-            }}
-          />
-        </>
-      )}
     </div>
   );
 }

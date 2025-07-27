@@ -183,14 +183,7 @@ export default function CarDetail() {
             <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Despesas</h3>
-                <div className="flex items-center">
-                  <AddExpenseDialog carId={car.id}>
-                    <Button size="sm" className="h-7 px-3 text-xs">
-                      <Plus className="w-3 h-3 mr-1" />
-                      Adicionar
-                    </Button>
-                  </AddExpenseDialog>
-                </div>
+                <AddExpenseDialog carId={car.id} />
               </div>
               <div className="space-y-3">
                 {expenses.length === 0 ? (
@@ -225,14 +218,7 @@ export default function CarDetail() {
             <Card className="p-6" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, rgba(255,255,255,1) 100%)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Receitas por Semana</h3>
-                <div className="flex items-center">
-                  <AddRevenueDialog carId={car.id}>
-                    <Button size="sm" className="h-7 px-3 text-xs">
-                      <Plus className="w-3 h-3 mr-1" />
-                      Adicionar
-                    </Button>
-                  </AddRevenueDialog>
-                </div>
+                <AddRevenueDialog carId={car.id} />
               </div>
               <WeeklyRevenueInlineView revenues={revenues} carId={car.id} />
             </Card>
