@@ -4,17 +4,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { MileageInput } from "@/components/ui/mileage-input";
 import { Edit, Loader2 } from "lucide-react";
 import { useUpdateExpense } from "@/hooks/useExpenses";
+import { formatCurrency, formatMileage } from "@/lib/formatters";
 
 interface Expense {
   id: string;
   car_id: string;
   description: string;
+  observation?: string;
+  mileage?: number;
+  next_mileage?: number;
   value: number;
   date: string;
-  category: string;
   created_at: string;
 }
 
@@ -26,9 +31,14 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     description: expense.description,
-    value: expense.value.toString(),
+    observation: expense.observation || "",
+    mileage: expense.mileage ? formatMileage(expense.mileage.toString()) : "",
+    mileageNumeric: expense.mileage || 0,
+    next_mileage: expense.next_mileage ? formatMileage(expense.next_mileage.toString()) : "",
+    nextMileageNumeric: expense.next_mileage || 0,
     date: expense.date,
-    category: expense.category,
+    value: formatCurrency((expense.value * 100).toString()),
+    valueNumeric: expense.value,
   });
 
   const updateExpenseMutation = useUpdateExpense();
@@ -36,9 +46,14 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
   const resetForm = () => {
     setFormData({
       description: expense.description,
-      value: expense.value.toString(),
+      observation: expense.observation || "",
+      mileage: expense.mileage ? formatMileage(expense.mileage.toString()) : "",
+      mileageNumeric: expense.mileage || 0,
+      next_mileage: expense.next_mileage ? formatMileage(expense.next_mileage.toString()) : "",
+      nextMileageNumeric: expense.next_mileage || 0,
       date: expense.date,
-      category: expense.category,
+      value: formatCurrency((expense.value * 100).toString()),
+      valueNumeric: expense.value,
     });
   };
 
@@ -49,9 +64,11 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
       await updateExpenseMutation.mutateAsync({
         id: expense.id,
         description: formData.description,
-        value: parseFloat(formData.value),
+        observation: formData.observation || undefined,
+        mileage: formData.mileageNumeric || undefined,
+        next_mileage: formData.nextMileageNumeric || undefined,
+        value: formData.valueNumeric,
         date: formData.date,
-        category: formData.category,
       });
 
       setOpen(false);
@@ -95,15 +112,44 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="value">Valor *</Label>
-            <Input
-              id="value"
-              type="number"
-              step="0.01"
-              value={formData.value}
-              onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-              required
+            <Label htmlFor="observation">Observação</Label>
+            <Textarea
+              id="observation"
+              value={formData.observation}
+              onChange={(e) => setFormData({ ...formData, observation: e.target.value })}
+              placeholder="Descreva detalhes sobre esta despesa..."
+              rows={3}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="mileage">KM Atual</Label>
+              <MileageInput
+                id="mileage"
+                value={formData.mileage}
+                onChange={(formatted, numeric) => setFormData({ 
+                  ...formData, 
+                  mileage: formatted, 
+                  mileageNumeric: numeric 
+                })}
+                placeholder="Ex: 50.000"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="next_mileage">Próximo KM</Label>
+              <MileageInput
+                id="next_mileage"
+                value={formData.next_mileage}
+                onChange={(formatted, numeric) => setFormData({ 
+                  ...formData, 
+                  next_mileage: formatted, 
+                  nextMileageNumeric: numeric 
+                })}
+                placeholder="Ex: 55.000"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -118,18 +164,18 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Categoria *</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="manutenção">Manutenção</SelectItem>
-                <SelectItem value="documentos">Documentos</SelectItem>
-                <SelectItem value="seguro">Seguro</SelectItem>
-                <SelectItem value="outros">Outros</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="value">Valor *</Label>
+            <CurrencyInput
+              id="value"
+              value={formData.value}
+              onChange={(formatted, numeric) => setFormData({ 
+                ...formData, 
+                value: formatted, 
+                valueNumeric: numeric 
+              })}
+              placeholder="Ex: 150,00"
+              required
+            />
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">

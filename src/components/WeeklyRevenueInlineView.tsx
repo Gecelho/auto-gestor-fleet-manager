@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { format, startOfWeek, endOfWeek, addDays, parseISO } from "date-fns";
@@ -11,6 +12,7 @@ import { useUpdateRevenue, useAddRevenue } from "@/hooks/useRevenues";
 import { Loader2, Edit, Trash2 } from "lucide-react";
 import { EditRevenueDialog } from "@/components/EditRevenueDialog";
 import { DeleteRevenueDialog } from "@/components/DeleteRevenueDialog";
+import { displayCurrency, formatCurrency } from "@/lib/formatters";
 
 interface Revenue {
   id: string;
@@ -38,7 +40,12 @@ interface WeekData {
 const dayNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInlineViewProps) {
-  const [editingWeeks, setEditingWeeks] = useState<{ [key: string]: { [key: string]: string } }>({});
+  // Função para truncar texto
+  const truncateText = (text: string, maxLength: number = 30) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+  const [editingWeeks, setEditingWeeks] = useState<{ [key: string]: { [key: string]: { formatted: string; numeric: number } } }>({});
   const [loadingWeeks, setLoadingWeeks] = useState<{ [key: string]: boolean }>({});
   const [showingInputs, setShowingInputs] = useState<{ [key: string]: boolean }>({});
 
@@ -76,11 +83,15 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
 
   const initializeEditingWeek = (weekKey: string, week: WeekData) => {
     if (!editingWeeks[weekKey]) {
-      const values: { [key: string]: string } = {};
+      const values: { [key: string]: { formatted: string; numeric: number } } = {};
       for (let i = 0; i < 7; i++) {
         const day = addDays(week.weekStart, i);
         const dayKey = format(day, 'yyyy-MM-dd');
-        values[dayKey] = (week.dailyValues[dayKey] || 0).toString();
+        const numericValue = week.dailyValues[dayKey] || 0;
+        values[dayKey] = {
+          formatted: formatCurrency((numericValue * 100).toString()),
+          numeric: numericValue
+        };
       }
       setEditingWeeks(prev => ({
         ...prev,
@@ -89,12 +100,12 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
     }
   };
 
-  const handleDailyValueChange = (weekKey: string, dayKey: string, value: string) => {
+  const handleDailyValueChange = (weekKey: string, dayKey: string, formatted: string, numeric: number) => {
     setEditingWeeks(prev => ({
       ...prev,
       [weekKey]: {
         ...prev[weekKey],
-        [dayKey]: value
+        [dayKey]: { formatted, numeric }
       }
     }));
   };
@@ -118,7 +129,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
       for (let i = 0; i < 7; i++) {
         const day = addDays(week.weekStart, i);
         const dayKey = format(day, 'yyyy-MM-dd');
-        const newValue = parseFloat(editingWeeks[weekKey][dayKey]) || 0;
+        const newValue = editingWeeks[weekKey][dayKey]?.numeric || 0;
         const existingValue = week.dailyValues[dayKey] || 0;
 
         if (newValue !== existingValue) {
@@ -159,7 +170,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {sortedWeeks.map((week) => {
         const weekKey = format(week.weekStart, 'yyyy-MM-dd');
         
@@ -168,9 +179,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
           const day = addDays(week.weekStart, i);
           const dayKey = format(day, 'yyyy-MM-dd');
           const dayNumber = format(day, 'dd');
-          const currentValue = editingWeeks[weekKey] ? 
-            parseFloat(editingWeeks[weekKey][dayKey]) || 0 : 
-            week.dailyValues[dayKey] || 0;
+          const currentValue = editingWeeks[weekKey]?.[dayKey]?.numeric ?? week.dailyValues[dayKey] ?? 0;
           
           chartData.push({
             day: `${dayNames[i]} ${dayNumber}`,
@@ -180,29 +189,29 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
         }
 
         return (
-          <Card key={weekKey} className="p-4">
+          <Card key={weekKey} className="p-4 mb-4 overflow-hidden">
             {/* Header da semana com botão de editar menor */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-start mb-4">
               <div>
                 <h4 className="text-base font-semibold">
                   {format(week.weekStart, 'dd', { locale: ptBR })} de {format(week.weekStart, 'MMM', { locale: ptBR })}. - {format(week.weekEnd, 'dd', { locale: ptBR })} de {format(week.weekEnd, 'MMM', { locale: ptBR })}.
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  {week.revenues.length} receita(s) • Total: R$ {week.totalValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  {week.revenues.length} receita(s) • Total: {displayCurrency(week.totalValue)}
                 </p>
               </div>
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="h-6 w-6"
+                className="h-8 w-8 flex-shrink-0"
                 onClick={() => handleEditToggle(weekKey, week)}
               >
                 <Edit className="w-3 h-3" />
               </Button>
             </div>
 
-            {/* Gráfico ajustado com melhor espaçamento */}
-            <div className="h-20 w-full mb-4">
+            {/* Gráfico com altura maior para melhor visualização */}
+            <div className="h-64 w-full mb-6 overflow-hidden relative">
               <ChartContainer
                 config={{
                   value: {
@@ -210,27 +219,28 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                     color: "#4285F4",
                   },
                 }}
+                className="h-full w-full relative z-0"
               >
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={250}>
                   <BarChart 
                     data={chartData} 
-                    margin={{ top: 5, right: 2, left: 2, bottom: 35 }}
+                    margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
                     barCategoryGap="15%"
                   >
                     <XAxis 
                       dataKey="day" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 9, fill: '#000', fontWeight: 'bold' }}
+                      tick={{ fontSize: 11, fill: '#666', fontWeight: '500' }}
                       interval={0}
-                      height={30}
+                      height={35}
                     />
                     <YAxis hide />
                     <ChartTooltip
                       content={
                         <ChartTooltipContent
                           formatter={(value, name) => [
-                            `R$ ${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+                            displayCurrency(Number(value)),
                             "Receita"
                           ]}
                         />
@@ -239,9 +249,9 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                     <Bar 
                       dataKey="value" 
                       fill="#4285F4" 
-                      radius={[1, 1, 0, 0]}
-                      barSize={6}
-                      maxBarSize={6}
+                      radius={[3, 3, 0, 0]}
+                      barSize={15}
+                      maxBarSize={20}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -250,35 +260,39 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
 
             {/* Lista de receitas individuais com botões de edição */}
             {week.revenues.length > 0 && (
-              <div className="space-y-2 mb-4">
-                <h5 className="text-sm font-medium text-muted-foreground">Receitas da semana:</h5>
-                {week.revenues.map((revenue) => (
-                  <div key={revenue.id} className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{revenue.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(parseISO(revenue.date), 'dd/MM/yyyy', { locale: ptBR })} • {revenue.type}
-                      </p>
+              <div className="space-y-2 mb-4 clear-both">
+                <h5 className="text-sm font-medium text-muted-foreground mb-3">Receitas da semana:</h5>
+                <div className="space-y-2">
+                  {week.revenues.map((revenue) => (
+                    <div key={revenue.id} className="flex items-center justify-between p-3 bg-muted rounded-lg min-h-[60px]">
+                      <div className="flex-1 min-w-0 pr-4">
+                        <p className="text-sm font-medium" title={revenue.description}>
+                          {truncateText(revenue.description)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(parseISO(revenue.date), 'dd/MM/yyyy', { locale: ptBR })} • {revenue.type}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2 flex-shrink-0">
+                        <span className="text-sm font-bold text-success whitespace-nowrap">
+                          {displayCurrency(revenue.value)}
+                        </span>
+                        <EditRevenueDialog revenue={revenue as any} />
+                        <DeleteRevenueDialog 
+                          revenueId={revenue.id}
+                          revenueDescription={revenue.description}
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-bold text-success">
-                        R$ {Number(revenue.value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                      </span>
-                      <EditRevenueDialog revenue={revenue as any} />
-                      <DeleteRevenueDialog 
-                        revenueId={revenue.id}
-                        revenueDescription={revenue.description}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
 
             {/* Inputs para edição rápida - só aparecem quando showingInputs[weekKey] é true */}
             {showingInputs[weekKey] && (
-              <div className="space-y-3 border-t pt-4">
-                <div className="grid grid-cols-7 gap-2 max-md:grid-cols-2 max-md:gap-3">
+              <div className="space-y-3 border-t pt-4 mt-4">
+                <div className="grid grid-cols-7 gap-2 max-md:grid-cols-3 max-md:gap-3 max-sm:grid-cols-2">
                   {chartData.map((dayData, index) => {
                     const day = addDays(week.weekStart, index);
                     const dayKey = format(day, 'yyyy-MM-dd');
@@ -288,24 +302,23 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                         <Label className="text-xs font-bold text-center block text-foreground">
                           {dayData.day}
                         </Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={editingWeeks[weekKey]?.[dayKey] || '0'}
-                          onChange={(e) => handleDailyValueChange(weekKey, dayKey, e.target.value)}
-                          placeholder="0.00"
-                          className="text-center text-xs h-7"
+                        <CurrencyInput
+                          value={editingWeeks[weekKey]?.[dayKey]?.formatted || '0,00'}
+                          onChange={(formatted, numeric) => handleDailyValueChange(weekKey, dayKey, formatted, numeric)}
+                          placeholder="0,00"
+                          className="text-center text-xs h-8"
                         />
                       </div>
                     );
                   })}
                 </div>
 
-                <div className="flex justify-end pt-2">
+                <div className="flex justify-end pt-4 border-t">
                   <Button 
                     onClick={() => handleSaveWeek(weekKey, week)} 
                     disabled={loadingWeeks[weekKey]}
                     size="sm"
+                    className="mt-2"
                   >
                     {loadingWeeks[weekKey] && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                     Salvar Alterações

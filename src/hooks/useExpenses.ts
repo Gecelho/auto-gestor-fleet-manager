@@ -7,14 +7,16 @@ interface Expense {
   id: string;
   car_id: string;
   description: string;
+  observation?: string;
+  mileage?: number;
+  next_mileage?: number;
   value: number;
   date: string;
-  category: string;
   created_at: string;
 }
 
 type AddExpenseData = Omit<Expense, "id" | "created_at">;
-type UpdateExpenseData = Pick<Expense, "id" | "description" | "value" | "date" | "category">;
+type UpdateExpenseData = Pick<Expense, "id" | "description" | "observation" | "mileage" | "next_mileage" | "value" | "date">;
 
 export const useExpenses = (carId: string) => {
   return useQuery({

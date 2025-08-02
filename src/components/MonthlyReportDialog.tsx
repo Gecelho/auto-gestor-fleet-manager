@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { FileText, Loader2 } from "lucide-react";
 import { useMonthlyReport } from "@/hooks/useMonthlyReport";
+import { displayCurrency, displayMileage } from "@/lib/formatters";
 
 interface MonthlyReportDialogProps {
   carId: string;
@@ -18,6 +19,12 @@ export function MonthlyReportDialog({ carId }: MonthlyReportDialogProps) {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
 
   const { data: reportData, isLoading, refetch } = useMonthlyReport(carId, selectedMonth, selectedYear);
+
+  // Função para truncar texto
+  const truncateText = (text: string, maxLength: number = 30) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
 
   const handleGenerateReport = () => {
     if (selectedMonth && selectedYear) {
@@ -88,13 +95,13 @@ export function MonthlyReportDialog({ carId }: MonthlyReportDialogProps) {
                 <Card className="p-4">
                   <p className="text-sm text-muted-foreground">Total Receitas</p>
                   <p className="text-xl font-bold text-success">
-                    R$ {reportData.totalRevenue.toLocaleString("pt-BR")}
+                    {displayCurrency(reportData.totalRevenue)}
                   </p>
                 </Card>
                 <Card className="p-4">
                   <p className="text-sm text-muted-foreground">Total Despesas</p>
                   <p className="text-xl font-bold text-danger">
-                    R$ {reportData.totalExpenses.toLocaleString("pt-BR")}
+                    {displayCurrency(reportData.totalExpenses)}
                   </p>
                 </Card>
               </div>
@@ -102,7 +109,7 @@ export function MonthlyReportDialog({ carId }: MonthlyReportDialogProps) {
               <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Lucro Líquido</p>
                 <p className={`text-xl font-bold ${reportData.netProfit >= 0 ? 'text-success' : 'text-danger'}`}>
-                  R$ {Math.abs(reportData.netProfit).toLocaleString("pt-BR")}
+                  {displayCurrency(Math.abs(reportData.netProfit))}
                 </p>
               </Card>
 
@@ -113,11 +120,21 @@ export function MonthlyReportDialog({ carId }: MonthlyReportDialogProps) {
                     {reportData.expenses.map((expense) => (
                       <div key={expense.id} className="flex justify-between items-center p-2 bg-muted rounded">
                         <div>
-                          <p className="font-medium">{expense.description}</p>
-                          <p className="text-sm text-muted-foreground">{expense.category}</p>
+                          <p className="font-medium" title={expense.description}>
+                            {truncateText(expense.description)}
+                          </p>
+                          {expense.observation && (
+                            <p className="text-sm text-muted-foreground" title={expense.observation}>
+                              {truncateText(expense.observation, 40)}
+                            </p>
+                          )}
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(expense.date).toLocaleDateString("pt-BR")}
+                            {expense.mileage && ` • KM: ${displayMileage(expense.mileage)}`}
+                          </p>
                         </div>
                         <span className="font-bold text-danger">
-                          R$ {Number(expense.value).toLocaleString("pt-BR")}
+                          {displayCurrency(expense.value)}
                         </span>
                       </div>
                     ))}
@@ -132,11 +149,13 @@ export function MonthlyReportDialog({ carId }: MonthlyReportDialogProps) {
                     {reportData.revenues.map((revenue) => (
                       <div key={revenue.id} className="flex justify-between items-center p-2 bg-muted rounded">
                         <div>
-                          <p className="font-medium">{revenue.description}</p>
+                          <p className="font-medium" title={revenue.description}>
+                            {truncateText(revenue.description)}
+                          </p>
                           <p className="text-sm text-muted-foreground">{revenue.type}</p>
                         </div>
                         <span className="font-bold text-success">
-                          R$ {Number(revenue.value).toLocaleString("pt-BR")}
+                          {displayCurrency(revenue.value)}
                         </span>
                       </div>
                     ))}

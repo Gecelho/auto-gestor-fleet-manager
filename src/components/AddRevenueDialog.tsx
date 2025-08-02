@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Plus, Loader2 } from "lucide-react";
 import { useAddRevenue } from "@/hooks/useRevenues";
 
@@ -17,6 +18,7 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
   const [formData, setFormData] = useState({
     description: "",
     value: "",
+    valueNumeric: 0,
     date: "",
     type: "",
   });
@@ -27,6 +29,7 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
     setFormData({
       description: "",
       value: "",
+      valueNumeric: 0,
       date: "",
       type: "",
     });
@@ -39,7 +42,7 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
       await addRevenueMutation.mutateAsync({
         car_id: carId,
         description: formData.description,
-        value: parseFloat(formData.value),
+        value: formData.valueNumeric,
         date: formData.date,
         type: formData.type,
       });
@@ -89,13 +92,15 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="value">Valor *</Label>
-            <Input
+            <CurrencyInput
               id="value"
-              type="number"
-              step="0.01"
               value={formData.value}
-              onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-              placeholder="Ex: 1500.00"
+              onChange={(formatted, numeric) => setFormData({ 
+                ...formData, 
+                value: formatted, 
+                valueNumeric: numeric 
+              })}
+              placeholder="Ex: 1.500,00"
               required
             />
           </div>

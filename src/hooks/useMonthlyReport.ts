@@ -9,8 +9,10 @@ interface MonthlyReportData {
   expenses: Array<{
     id: string;
     description: string;
+    observation?: string;
+    mileage?: number;
+    next_mileage?: number;
     value: number;
-    category: string;
     date: string;
   }>;
   revenues: Array<{

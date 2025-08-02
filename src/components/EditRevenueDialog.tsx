@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Edit, Loader2 } from "lucide-react";
 import { useUpdateRevenue } from "@/hooks/useRevenues";
 import { Revenue } from "@/types/database";
+import { formatCurrency } from "@/lib/formatters";
 
 interface EditRevenueDialogProps {
   revenue: Revenue;
@@ -17,7 +19,8 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     description: revenue.description,
-    value: revenue.value.toString(),
+    value: formatCurrency((revenue.value * 100).toString()),
+    valueNumeric: revenue.value,
     date: revenue.date,
     type: revenue.type,
   });
@@ -27,7 +30,8 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
   const resetForm = () => {
     setFormData({
       description: revenue.description,
-      value: revenue.value.toString(),
+      value: formatCurrency((revenue.value * 100).toString()),
+      valueNumeric: revenue.value,
       date: revenue.date,
       type: revenue.type,
     });
@@ -40,7 +44,7 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
       await updateRevenueMutation.mutateAsync({
         id: revenue.id,
         description: formData.description,
-        value: parseFloat(formData.value),
+        value: formData.valueNumeric,
         date: formData.date,
         type: formData.type,
       });
@@ -87,12 +91,15 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="value">Valor *</Label>
-            <Input
+            <CurrencyInput
               id="value"
-              type="number"
-              step="0.01"
               value={formData.value}
-              onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+              onChange={(formatted, numeric) => setFormData({ 
+                ...formData, 
+                value: formatted, 
+                valueNumeric: numeric 
+              })}
+              placeholder="Ex: 1.500,00"
               required
             />
           </div>

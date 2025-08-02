@@ -2,6 +2,9 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Car, DollarSign, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
+import { NextExpenseSummary } from "./NextExpenseSummary";
+import { useFutureExpenses, useCarCurrentMileage } from "@/hooks/useFutureExpenses";
+import { displayCurrency } from "@/lib/formatters";
 
 interface CarCardProps {
   id: string;
@@ -13,10 +16,12 @@ interface CarCardProps {
   totalExpenses: number;
   remainingBalance: number;
   status: "quitado" | "andamento" | "alugado";
+  mileage: number;
   onClick: () => void;
 }
 
 export function CarCard({
+  id,
   name,
   plate,
   image,
@@ -25,10 +30,16 @@ export function CarCard({
   totalExpenses,
   remainingBalance,
   status,
+  mileage,
   onClick
 }: CarCardProps) {
   const netProfit = totalRevenue - totalExpenses;
   const isProfit = netProfit > 0;
+  
+  // Buscar próxima despesa e quilometragem atual
+  const { data: futureExpenses } = useFutureExpenses(id, 'pending');
+  const { data: currentMileage } = useCarCurrentMileage(id);
+  const nextExpense = futureExpenses?.[0] || null;
   
   const statusConfig = {
     quitado: { label: "Quitado", className: "bg-success text-success-foreground" },
@@ -74,7 +85,7 @@ export function CarCard({
           <div className="flex items-center mb-3">
             <DollarSign className="w-4 h-4 text-muted-foreground mr-1" />
             <span className="text-sm font-medium">
-              R$ {purchaseValue.toLocaleString("pt-BR")}
+              {displayCurrency(purchaseValue)}
             </span>
           </div>
           
@@ -85,7 +96,7 @@ export function CarCard({
               <div>
                 <p className="text-muted-foreground">Lucro</p>
                 <p className="font-medium text-success">
-                  R$ {totalRevenue.toLocaleString("pt-BR")}
+                  {displayCurrency(totalRevenue)}
                 </p>
               </div>
             </div>
@@ -95,7 +106,7 @@ export function CarCard({
               <div>
                 <p className="text-muted-foreground">Gastos</p>
                 <p className="font-medium text-danger">
-                  R$ {totalExpenses.toLocaleString("pt-BR")}
+                  {displayCurrency(totalExpenses)}
                 </p>
               </div>
             </div>
@@ -105,11 +116,20 @@ export function CarCard({
               <div>
                 <p className="text-muted-foreground">Saldo</p>
                 <p className={`font-medium ${isProfit ? 'text-success' : 'text-danger'}`}>
-                  R$ {Math.abs(netProfit).toLocaleString("pt-BR")}
+                  {displayCurrency(Math.abs(netProfit))}
                 </p>
               </div>
             </div>
           </div>
+          
+          {/* Próxima despesa */}
+          <NextExpenseSummary
+            nextExpense={nextExpense}
+            carId={id}
+            carModel={name}
+            carBrand={name}
+            currentMileage={currentMileage || 0}
+          />
         </div>
       </div>
     </Card>
