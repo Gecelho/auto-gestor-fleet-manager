@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit, Loader2 } from "lucide-react";
 import { useUpdateDriver } from "@/hooks/useCarDetails";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { Driver } from "@/types/database";
 
 interface EditDriverDialogProps {
@@ -16,6 +17,7 @@ interface EditDriverDialogProps {
 
 export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
   const [open, setOpen] = useState(false);
+  const { clickSound, successSound } = useSoundEffects();
   const [formData, setFormData] = useState({
     name: driver?.name || "",
     phone: driver?.phone || "",
@@ -46,6 +48,7 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
         address: formData.address || undefined,
       });
 
+      successSound(); // Som de sucesso ao editar motorista
       setOpen(false);
     } catch (error) {
       console.error("Error updating driver:", error);
@@ -53,6 +56,9 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      clickSound(); // Som ao abrir dialog
+    }
     setOpen(newOpen);
     if (!newOpen) {
       resetForm();
@@ -64,9 +70,10 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Edit className="w-4 h-4 mr-2" />
-          {driver ? "Editar" : "Adicionar Motorista"}
+        <Button variant="outline" className="w-full sm:w-auto">
+          <Edit className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden xs:inline">{driver ? "Editar" : "Adicionar"} </span>
+          {driver ? "Motorista" : "Motorista"}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[85vh] flex flex-col">

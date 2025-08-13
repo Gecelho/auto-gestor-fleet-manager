@@ -1,9 +1,9 @@
 
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Car, DollarSign, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import { NextExpenseSummary } from "./NextExpenseSummary";
 import { useFutureExpenses, useCarCurrentMileage } from "@/hooks/useFutureExpenses";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { displayCurrency } from "@/lib/formatters";
 
 interface CarCardProps {
@@ -33,6 +33,7 @@ export function CarCard({
   mileage,
   onClick
 }: CarCardProps) {
+  const { clickSound } = useSoundEffects();
   const netProfit = totalRevenue - totalExpenses;
   const isProfit = netProfit > 0;
   
@@ -52,12 +53,15 @@ export function CarCard({
 
   return (
     <div 
-      className="bg-card/90 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-lg border border-border/30 cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group"
-      onClick={onClick}
+      className="card-modern mobile-p-3 p-5 cursor-pointer group"
+      onClick={() => {
+        clickSound(); // Som ao clicar no card
+        onClick();
+      }}
     >
-      {/* Header with Image and Status - Mobile Optimized */}
-      <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl overflow-hidden bg-muted flex-shrink-0 shadow-md">
+      {/* Header with Image and Status */}
+      <div className="flex items-start space-x-3 sm:space-x-4 mb-4 sm:mb-6">
+        <div className="w-14 h-14 sm:w-16 md:w-20 sm:h-16 md:h-20 rounded-lg sm:rounded-xl overflow-hidden bg-muted flex-shrink-0 shadow-soft">
           <img 
             src={imageUrl} 
             alt={name}
@@ -70,9 +74,9 @@ export function CarCard({
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <div className="min-w-0 flex-1 mr-2">
-              <h3 className="font-bold text-card-foreground truncate text-base sm:text-lg">{name}</h3>
+          <div className="flex items-start justify-between mb-2 sm:mb-3">
+            <div className="min-w-0 flex-1 mr-2 sm:mr-3">
+              <h3 className="font-bold text-card-foreground truncate text-sm sm:text-base md:text-lg">{name}</h3>
               <p className="text-xs sm:text-sm text-muted-foreground font-medium">{plate}</p>
             </div>
             <Badge className={`${statusConfig[status].className} text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-sm flex-shrink-0`}>
@@ -80,8 +84,8 @@ export function CarCard({
             </Badge>
           </div>
           
-          {/* Purchase Value - Mobile Optimized */}
-          <div className="flex items-center text-muted-foreground mb-2 sm:mb-3">
+          {/* Purchase Value */}
+          <div className="flex items-center text-muted-foreground">
             <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
             <span className="text-xs sm:text-sm font-semibold">
               {displayCurrency(purchaseValue)}
@@ -90,25 +94,25 @@ export function CarCard({
         </div>
       </div>
       
-      {/* Financial Summary - Mobile Grid */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4">
-        <div className="bg-success-light rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center border border-success/20 min-w-0 overflow-hidden">
+      {/* Financial Summary */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 mb-4 sm:mb-6">
+        <div className="bg-success-light rounded-md sm:rounded-lg p-1.5 sm:p-2 md:p-3 text-center border border-success/20">
           <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-success mx-auto mb-0.5 sm:mb-1" />
-          <p className="text-xs text-success font-medium truncate">Receita</p>
-          <p className="text-xs sm:text-sm font-bold text-success truncate">
+          <p className="text-xs mobile-text-xs text-success font-medium">Receita</p>
+          <p className="text-xs mobile-text-xs sm:text-sm font-bold text-success truncate">
             {displayCurrency(totalRevenue)}
           </p>
         </div>
         
-        <div className="bg-danger-light rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center border border-danger/20 min-w-0 overflow-hidden">
+        <div className="bg-danger-light rounded-md sm:rounded-lg p-1.5 sm:p-2 md:p-3 text-center border border-danger/20">
           <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-danger mx-auto mb-0.5 sm:mb-1" />
-          <p className="text-xs text-danger font-medium truncate">Gastos</p>
-          <p className="text-xs sm:text-sm font-bold text-danger truncate">
+          <p className="text-xs mobile-text-xs text-danger font-medium">Gastos</p>
+          <p className="text-xs mobile-text-xs sm:text-sm font-bold text-danger truncate">
             {displayCurrency(totalExpenses)}
           </p>
         </div>
         
-        <div className={`rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center border min-w-0 overflow-hidden ${
+        <div className={`rounded-md sm:rounded-lg p-1.5 sm:p-2 md:p-3 text-center border ${
           isProfit 
             ? 'bg-info-light border-info/20' 
             : 'bg-warning-light border-warning/20'
@@ -116,12 +120,12 @@ export function CarCard({
           <AlertCircle className={`w-3 h-3 sm:w-4 sm:h-4 mx-auto mb-0.5 sm:mb-1 ${
             isProfit ? 'text-info' : 'text-warning'
           }`} />
-          <p className={`text-xs font-medium truncate ${
+          <p className={`text-xs mobile-text-xs font-medium ${
             isProfit ? 'text-info' : 'text-warning'
           }`}>
             {isProfit ? 'Lucro' : 'Prejuízo'}
           </p>
-          <p className={`text-xs sm:text-sm font-bold truncate ${
+          <p className={`text-xs mobile-text-xs sm:text-sm font-bold truncate ${
             isProfit ? 'text-info' : 'text-warning'
           }`}>
             {displayCurrency(Math.abs(netProfit))}
@@ -129,8 +133,8 @@ export function CarCard({
         </div>
       </div>
       
-      {/* Next Expense - Mobile Optimized */}
-      <div className="border-t border-border pt-2 sm:pt-3">
+      {/* Next Expense */}
+      <div className="border-t border-border pt-3 sm:pt-4">
         <NextExpenseSummary
           nextExpense={nextExpense}
           carId={id}

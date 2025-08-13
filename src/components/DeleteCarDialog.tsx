@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useDeleteCar } from "@/hooks/useDeleteCar";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { Trash2 } from "lucide-react";
 
 interface DeleteCarDialogProps {
@@ -24,10 +25,12 @@ interface DeleteCarDialogProps {
 export function DeleteCarDialog({ carId, carName, onDelete }: DeleteCarDialogProps) {
   const [open, setOpen] = useState(false);
   const { mutate: deleteCar, isPending } = useDeleteCar();
+  const { clickSound, successSound } = useSoundEffects();
 
   const handleDelete = () => {
     deleteCar(carId, {
       onSuccess: () => {
+        successSound(); // Som de sucesso ao deletar carro
         setOpen(false);
         onDelete?.();
       },
@@ -35,7 +38,10 @@ export function DeleteCarDialog({ carId, carName, onDelete }: DeleteCarDialogPro
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={open} onOpenChange={(newOpen) => {
+      if (newOpen) clickSound(); // Som ao abrir dialog
+      setOpen(newOpen);
+    }}>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="sm">
           <Trash2 className="w-4 h-4 mr-2" />

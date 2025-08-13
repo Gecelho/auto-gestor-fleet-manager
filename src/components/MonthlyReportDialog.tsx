@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Loader2, Calendar, TrendingUp } from "lucide-react";
 import { useMonthlyReport, usePeriodReport } from "@/hooks/useMonthlyReport";
 import { displayCurrency, displayMileage } from "@/lib/formatters";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -18,6 +19,7 @@ interface MonthlyReportDialogProps {
 
 export function MonthlyReportDialog({ carId, carName }: MonthlyReportDialogProps) {
   const [open, setOpen] = useState(false);
+  const { clickSound } = useSoundEffects();
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [startMonth, setStartMonth] = useState("");
@@ -33,6 +35,9 @@ export function MonthlyReportDialog({ carId, carName }: MonthlyReportDialogProps
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      clickSound(); // Som ao abrir relatório mensal
+    }
     setOpen(newOpen);
     if (!newOpen) {
       setSelectedMonth("");

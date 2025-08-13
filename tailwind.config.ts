@@ -93,7 +93,9 @@ export default {
 				'sm': 'var(--shadow-sm)',
 				'md': 'var(--shadow-md)',
 				'lg': 'var(--shadow-lg)',
-				'card': 'var(--shadow-card)'
+				'card': 'var(--shadow-card)',
+				'elevated': 'var(--shadow-elevated)',
+				'soft': 'var(--shadow-card)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

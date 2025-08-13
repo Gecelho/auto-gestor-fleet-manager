@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { FileBarChart, Loader2, Calendar, TrendingUp, Car } from "lucide-react";
 import { useGeneralReport, useGeneralPeriodReport } from "@/hooks/useGeneralReport";
 import { useCars } from "@/hooks/useCars";
 import { displayCurrency } from "@/lib/formatters";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -21,6 +22,8 @@ export function GeneralReportDialog() {
   const [endMonth, setEndMonth] = useState("");
   const [selectedCarIds, setSelectedCarIds] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(true);
+
+  const { clickSound } = useSoundEffects();
 
   const { data: cars } = useCars();
   const { data: monthlyData, isLoading: monthlyLoading } = useGeneralReport(
@@ -37,6 +40,7 @@ export function GeneralReportDialog() {
   // Os relatórios são gerados automaticamente quando os parâmetros são preenchidos
 
   const handleCarSelection = (carId: string, checked: boolean) => {
+    clickSound(); // Som ao selecionar/deselecionar carro
     if (checked) {
       setSelectedCarIds(prev => [...prev, carId]);
     } else {
@@ -45,6 +49,7 @@ export function GeneralReportDialog() {
   };
 
   const handleSelectAll = (checked: boolean) => {
+    clickSound(); // Som ao selecionar/deselecionar todos
     setSelectAll(checked);
     if (checked) {
       setSelectedCarIds([]);
@@ -54,6 +59,9 @@ export function GeneralReportDialog() {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      clickSound(); // Som ao abrir relatório
+    }
     setOpen(newOpen);
     if (!newOpen) {
       setSelectedMonth("");
@@ -121,12 +129,38 @@ export function GeneralReportDialog() {
             <div className="space-y-3">
               <Label>Selecionar Carros</Label>
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="select-all"
-                  checked={selectAll}
-                  onCheckedChange={handleSelectAll}
-                />
-                <Label htmlFor="select-all" className="font-medium">
+                <div 
+                  onClick={() => handleSelectAll(!selectAll)}
+                  className="general-report-selection-checkbox-container cursor-pointer"
+                >
+                  <div className={`general-report-selection-checkbox-box ${
+                    selectAll 
+                      ? 'general-report-selection-checkbox-checked' 
+                      : 'general-report-selection-checkbox-unchecked'
+                  }`}>
+                    {selectAll && (
+                      <svg 
+                        className="general-report-selection-checkbox-checkmark" 
+                        viewBox="0 0 16 16" 
+                        fill="none" 
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path 
+                          d="M13.5 4.5L6 12L2.5 8.5" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <Label 
+                  htmlFor="select-all" 
+                  className="font-medium cursor-pointer"
+                  onClick={() => handleSelectAll(!selectAll)}
+                >
                   Todos os carros
                 </Label>
               </div>
@@ -134,12 +168,38 @@ export function GeneralReportDialog() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto p-2 border rounded-lg">
                   {cars?.map((car) => (
                     <div key={car.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={car.id}
-                        checked={selectedCarIds.includes(car.id)}
-                        onCheckedChange={(checked) => handleCarSelection(car.id, checked as boolean)}
-                      />
-                      <Label htmlFor={car.id} className="text-sm truncate">
+                      <div 
+                        onClick={() => handleCarSelection(car.id, !selectedCarIds.includes(car.id))}
+                        className="general-report-selection-checkbox-container cursor-pointer"
+                      >
+                        <div className={`general-report-selection-checkbox-box ${
+                          selectedCarIds.includes(car.id)
+                            ? 'general-report-selection-checkbox-checked' 
+                            : 'general-report-selection-checkbox-unchecked'
+                        }`}>
+                          {selectedCarIds.includes(car.id) && (
+                            <svg 
+                              className="general-report-selection-checkbox-checkmark" 
+                              viewBox="0 0 16 16" 
+                              fill="none" 
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path 
+                                d="M13.5 4.5L6 12L2.5 8.5" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      <Label 
+                        htmlFor={car.id} 
+                        className="text-sm truncate cursor-pointer"
+                        onClick={() => handleCarSelection(car.id, !selectedCarIds.includes(car.id))}
+                      >
                         {car.name}
                       </Label>
                     </div>
@@ -250,12 +310,38 @@ export function GeneralReportDialog() {
             <div className="space-y-3">
               <Label>Selecionar Carros</Label>
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="select-all-period"
-                  checked={selectAll}
-                  onCheckedChange={handleSelectAll}
-                />
-                <Label htmlFor="select-all-period" className="font-medium">
+                <div 
+                  onClick={() => handleSelectAll(!selectAll)}
+                  className="general-report-selection-checkbox-container cursor-pointer"
+                >
+                  <div className={`general-report-selection-checkbox-box ${
+                    selectAll 
+                      ? 'general-report-selection-checkbox-checked' 
+                      : 'general-report-selection-checkbox-unchecked'
+                  }`}>
+                    {selectAll && (
+                      <svg 
+                        className="general-report-selection-checkbox-checkmark" 
+                        viewBox="0 0 16 16" 
+                        fill="none" 
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path 
+                          d="M13.5 4.5L6 12L2.5 8.5" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <Label 
+                  htmlFor="select-all-period" 
+                  className="font-medium cursor-pointer"
+                  onClick={() => handleSelectAll(!selectAll)}
+                >
                   Todos os carros
                 </Label>
               </div>
@@ -263,12 +349,38 @@ export function GeneralReportDialog() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto p-2 border rounded-lg">
                   {cars?.map((car) => (
                     <div key={car.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`period-${car.id}`}
-                        checked={selectedCarIds.includes(car.id)}
-                        onCheckedChange={(checked) => handleCarSelection(car.id, checked as boolean)}
-                      />
-                      <Label htmlFor={`period-${car.id}`} className="text-sm truncate">
+                      <div 
+                        onClick={() => handleCarSelection(car.id, !selectedCarIds.includes(car.id))}
+                        className="general-report-selection-checkbox-container cursor-pointer"
+                      >
+                        <div className={`general-report-selection-checkbox-box ${
+                          selectedCarIds.includes(car.id)
+                            ? 'general-report-selection-checkbox-checked' 
+                            : 'general-report-selection-checkbox-unchecked'
+                        }`}>
+                          {selectedCarIds.includes(car.id) && (
+                            <svg 
+                              className="general-report-selection-checkbox-checkmark" 
+                              viewBox="0 0 16 16" 
+                              fill="none" 
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path 
+                                d="M13.5 4.5L6 12L2.5 8.5" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      <Label 
+                        htmlFor={`period-${car.id}`} 
+                        className="text-sm truncate cursor-pointer"
+                        onClick={() => handleCarSelection(car.id, !selectedCarIds.includes(car.id))}
+                      >
                         {car.name}
                       </Label>
                     </div>

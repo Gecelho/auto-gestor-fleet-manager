@@ -6,67 +6,71 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 215 25% 15%;
+    /* Modern neutral palette */
+    --background: 0 0% 99%;
+    --foreground: 220 15% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 220 15% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 220 15% 12%;
 
-    --primary: 215 28% 17%;
+    /* Professional primary colors */
+    --primary: 220 25% 20%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 215 15% 93%;
-    --secondary-foreground: 215 25% 15%;
+    --secondary: 220 8% 96%;
+    --secondary-foreground: 220 15% 12%;
 
-    --muted: 215 15% 95%;
-    --muted-foreground: 215 10% 45%;
+    --muted: 220 8% 97%;
+    --muted-foreground: 220 8% 45%;
 
-    --accent: 215 15% 93%;
-    --accent-foreground: 215 25% 15%;
+    --accent: 220 8% 96%;
+    --accent-foreground: 220 15% 12%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 215 15% 88%;
-    --input: 215 15% 88%;
-    --ring: 215 28% 17%;
+    /* Refined borders and inputs */
+    --border: 220 8% 92%;
+    --input: 220 8% 96%;
+    --ring: 220 25% 20%;
 
-    /* AutoGestor specific colors */
-    --success: 142 76% 36%;
+    /* Professional color system */
+    --success: 145 65% 42%;
     --success-foreground: 0 0% 98%;
-    --success-light: 142 76% 90%;
+    --success-light: 145 65% 96%;
     
-    --danger: 0 84% 60%;
+    --danger: 0 75% 55%;
     --danger-foreground: 0 0% 98%;
-    --danger-light: 0 84% 95%;
+    --danger-light: 0 75% 96%;
     
-    --warning: 38 92% 50%;
+    --warning: 35 85% 55%;
     --warning-foreground: 0 0% 98%;
-    --warning-light: 38 92% 95%;
+    --warning-light: 35 85% 96%;
     
-    --info: 215 100% 56%;
+    --info: 215 85% 58%;
     --info-foreground: 0 0% 98%;
-    --info-light: 215 100% 95%;
+    --info-light: 215 85% 96%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(215 28% 17%) 0%, hsl(215 25% 25%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 60% 45%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(215 15% 98%) 100%);
+    /* Modern gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220 25% 20%) 0%, hsl(220 20% 28%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 42%) 0%, hsl(145 60% 48%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(220 8% 99%) 100%);
     
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(215 25% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(215 25% 15% / 0.1), 0 2px 4px -2px hsl(215 25% 15% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(215 25% 15% / 0.1), 0 4px 6px -4px hsl(215 25% 15% / 0.1);
-    --shadow-card: 0 4px 16px hsl(215 25% 15% / 0.08);
+    /* Refined shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 15% 12% / 0.04);
+    --shadow-md: 0 2px 8px -2px hsl(220 15% 12% / 0.08);
+    --shadow-lg: 0 4px 16px -4px hsl(220 15% 12% / 0.12);
+    --shadow-card: 0 2px 12px hsl(220 15% 12% / 0.06);
+    --shadow-elevated: 0 8px 32px -8px hsl(220 15% 12% / 0.15);
     
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Smooth animations */
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -86,62 +90,63 @@
   }
 
   .dark {
-    /* Cores otimizadas para acessibilidade visual */
-    --background: 0 0% 12%; /* Cinza escuro mais suave */
-    --foreground: 0 0% 95%; /* Branco quase puro para máximo contraste */
+    /* Modern dark theme */
+    --background: 220 15% 8%;
+    --foreground: 220 8% 95%;
 
-    --card: 0 0% 15%; /* Cards com cinza um pouco mais claro */
-    --card-foreground: 0 0% 95%;
+    --card: 220 15% 10%;
+    --card-foreground: 220 8% 95%;
 
-    --popover: 0 0% 15%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 220 15% 10%;
+    --popover-foreground: 220 8% 95%;
 
-    --primary: 210 100% 70%; /* Azul mais claro e vibrante */
-    --primary-foreground: 0 0% 5%;
+    --primary: 215 85% 65%;
+    --primary-foreground: 220 15% 8%;
 
-    --secondary: 0 0% 20%; /* Cinza médio para elementos secundários */
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 220 8% 95%;
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 75%; /* Texto secundário mais claro */
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 8% 65%;
 
-    --accent: 0 0% 20%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 220 15% 15%;
+    --accent-foreground: 220 8% 95%;
 
-    --destructive: 0 85% 65%; /* Vermelho mais claro para melhor visibilidade */
-    --destructive-foreground: 0 0% 95%;
+    --destructive: 0 75% 65%;
+    --destructive-foreground: 220 15% 8%;
 
-    --border: 0 0% 25%; /* Bordas mais visíveis */
-    --input: 0 0% 18%;
-    --ring: 210 100% 70%;
+    --border: 220 15% 18%;
+    --input: 220 15% 12%;
+    --ring: 215 85% 65%;
     
-    /* Cores específicas do AutoGestor para modo escuro */
-    --success: 142 70% 55%; /* Verde mais claro */
-    --success-foreground: 0 0% 5%;
-    --success-light: 142 70% 20%;
+    /* Dark theme color system */
+    --success: 145 65% 55%;
+    --success-foreground: 220 15% 8%;
+    --success-light: 145 65% 15%;
     
-    --danger: 0 85% 65%;
-    --danger-foreground: 0 0% 95%;
-    --danger-light: 0 85% 20%;
+    --danger: 0 75% 65%;
+    --danger-foreground: 220 15% 8%;
+    --danger-light: 0 75% 15%;
     
-    --warning: 38 95% 60%; /* Amarelo mais vibrante */
-    --warning-foreground: 0 0% 5%;
-    --warning-light: 38 95% 20%;
+    --warning: 35 85% 65%;
+    --warning-foreground: 220 15% 8%;
+    --warning-light: 35 85% 15%;
     
-    --info: 210 100% 70%;
-    --info-foreground: 0 0% 5%;
-    --info-light: 210 100% 20%;
+    --info: 215 85% 65%;
+    --info-foreground: 220 15% 8%;
+    --info-light: 215 85% 15%;
 
-    /* Gradientes otimizados para modo escuro */
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 70%) 0%, hsl(210 100% 60%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(142 70% 55%) 0%, hsl(142 70% 45%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 15%) 0%, hsl(0 0% 18%) 100%);
+    /* Dark theme gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(215 85% 65%) 0%, hsl(215 80% 58%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 55%) 0%, hsl(145 60% 48%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 15% 10%) 0%, hsl(220 15% 12%) 100%);
     
-    /* Sombras ajustadas para modo escuro */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
-    --shadow-card: 0 4px 16px hsl(0 0% 0% / 0.3);
+    /* Dark theme shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 2px 8px -2px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 4px 16px -4px hsl(0 0% 0% / 0.4);
+    --shadow-card: 0 2px 12px hsl(0 0% 0% / 0.25);
+    --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.5);
 
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 0 0% 95%;
@@ -215,28 +220,205 @@
 }
 
 @layer utilities {
-  /* Glass morphism utility */
+  /* Modern glass morphism */
   .glass {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
-  /* Gradient text utility */
+  /* Professional gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, rgb(59 130 246), rgb(99 102 241));
+    background: linear-gradient(135deg, hsl(220 25% 20%), hsl(215 85% 58%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Enhanced shadows */
+  /* Modern shadow system */
   .shadow-soft {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
   }
 
   .shadow-glow {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 24px hsl(215 85% 58% / 0.15);
+  }
+
+  /* Professional card styles */
+  .card-modern {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    transition: var(--transition-smooth);
+  }
+
+  .card-modern:hover {
+    box-shadow: var(--shadow-elevated);
+    transform: translateY(-2px);
+  }
+
+  /* Container improvements */
+  .container-modern {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem; /* Padding uniforme em todas as direções */
+  }
+
+  @media (min-width: 640px) {
+    .container-modern {
+      padding: 1.5rem; /* Padding uniforme em todas as direções */
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-modern {
+      padding: 2rem; /* Padding uniforme em todas as direções */
+    }
+  }
+
+  /* Container para páginas que precisam de altura total */
+  .container-full-height {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 640px) {
+    .container-full-height {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-full-height {
+      padding: 2rem;
+    }
+  }
+
+  /* Responsive grid improvements */
+  .grid-responsive {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .grid-responsive {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .grid-responsive {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  /* Modern button styles */
+  .btn-modern {
+    border-radius: var(--radius);
+    font-weight: 500;
+    transition: var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-modern:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  /* Input improvements */
+  .input-modern {
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+    transition: var(--transition-fast);
+  }
+
+  .input-modern:focus {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+  }
+
+  /* Smooth page transitions */
+  .page-transition {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Loading states */
+  .loading-shimmer {
+    background: linear-gradient(90deg, 
+      hsl(var(--muted)) 25%, 
+      hsl(var(--muted) / 0.5) 50%, 
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Improved focus states */
+  .focus-ring {
+    transition: var(--transition-fast);
+  }
+
+  .focus-ring:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    transition: var(--transition-smooth);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Extra small screens */
+  @media (max-width: 475px) {
+    .xs\:hidden {
+      display: none !important;
+    }
+    
+    .xs\:inline {
+      display: inline !important;
+    }
+    
+    .xs\:block {
+      display: block !important;
+    }
   }
 
   /* Mobile-specific utilities */
@@ -244,13 +426,71 @@
     .mobile-compact {
       padding: 0.75rem;
     }
-    
-    .mobile-text-sm {
-      font-size: 0.875rem;
+
+    /* Mobile container adjustments */
+    .container-modern {
+      padding: 0 0.75rem;
     }
-    
-    .mobile-rounded {
-      border-radius: 0.75rem;
+
+    /* Mobile card adjustments */
+    .card-modern {
+      padding: 1rem !important;
+      margin-bottom: 1rem;
+    }
+
+    /* Mobile grid responsive */
+    .grid-responsive {
+      grid-template-columns: 1fr !important;
+      gap: 1rem !important;
+    }
+
+    /* Mobile financial summary */
+    .mobile-financial-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 0.75rem !important;
+    }
+
+    /* Mobile text adjustments */
+    .mobile-text-sm {
+      font-size: 0.75rem !important;
+    }
+
+    .mobile-text-xs {
+      font-size: 0.625rem !important;
+    }
+
+    /* Mobile spacing */
+    .mobile-space-y-3 > * + * {
+      margin-top: 0.75rem !important;
+    }
+
+    .mobile-space-y-4 > * + * {
+      margin-top: 1rem !important;
+    }
+
+    /* Mobile padding adjustments */
+    .mobile-p-3 {
+      padding: 0.75rem !important;
+    }
+
+    .mobile-p-4 {
+      padding: 1rem !important;
+    }
+
+    /* Mobile margin adjustments */
+    .mobile-mb-3 {
+      margin-bottom: 0.75rem !important;
+    }
+
+    .mobile-mb-4 {
+      margin-bottom: 1rem !important;
+    }
+  }
+
+  /* Tablet adjustments */
+  @media (min-width: 641px) and (max-width: 768px) {
+    .card-modern {
+      padding: 1.25rem;
     }
   }
 
@@ -258,6 +498,157 @@
   .tap-target {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* Fix calendar icons in dark theme */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+    opacity: 0.7;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  input[type="date"]:hover::-webkit-calendar-picker-indicator,
+  input[type="month"]:hover::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]:hover::-webkit-calendar-picker-indicator,
+  input[type="time"]:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator,
+  .dark input[type="month"]::-webkit-calendar-picker-indicator,
+  .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  .dark input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.8;
+  }
+
+  .dark input[type="date"]:hover::-webkit-calendar-picker-indicator,
+  .dark input[type="month"]:hover::-webkit-calendar-picker-indicator,
+  .dark input[type="datetime-local"]:hover::-webkit-calendar-picker-indicator,
+  .dark input[type="time"]:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
+  }
+
+  /* Firefox date input icons */
+  input[type="date"]::-moz-calendar-picker-indicator,
+  input[type="month"]::-moz-calendar-picker-indicator,
+  input[type="datetime-local"]::-moz-calendar-picker-indicator,
+  input[type="time"]::-moz-calendar-picker-indicator {
+    filter: invert(0);
+    opacity: 0.7;
+    cursor: pointer;
+  }
+
+  .dark input[type="date"]::-moz-calendar-picker-indicator,
+  .dark input[type="month"]::-moz-calendar-picker-indicator,
+  .dark input[type="datetime-local"]::-moz-calendar-picker-indicator,
+  .dark input[type="time"]::-moz-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.8;
+  }
+
+  /* Fix select dropdown arrows in dark theme */
+  select::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  select::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  select::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 4px;
+  }
+
+  select::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+
+  /* Fix input number spinners in dark theme */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    opacity: 0.7;
+    cursor: pointer;
+  }
+
+  .dark input[type="number"]::-webkit-outer-spin-button,
+  .dark input[type="number"]::-webkit-inner-spin-button {
+    filter: invert(1);
+    opacity: 0.8;
+  }
+
+  /* Fix search input clear button */
+  input[type="search"]::-webkit-search-cancel-button {
+    opacity: 0.7;
+    cursor: pointer;
+  }
+
+  .dark input[type="search"]::-webkit-search-cancel-button {
+    filter: invert(1);
+    opacity: 0.8;
+  }
+
+  /* Ensure proper contrast for placeholder text */
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.7;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    opacity: 0.8;
+  }
+
+  /* Ensure SVG icons inherit proper colors */
+  svg {
+    color: inherit;
+  }
+
+  /* Fix any remaining icon color issues */
+  .lucide {
+    color: currentColor;
+  }
+
+  /* Ensure button icons have proper contrast */
+  button svg,
+  [role="button"] svg {
+    color: currentColor;
+  }
+
+  /* Fix dialog and popover backgrounds */
+  [data-radix-popper-content-wrapper] {
+    z-index: 50;
+  }
+
+  /* Improve focus visibility */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Fix button text wrapping */
+  button {
+    white-space: nowrap;
+  }
+
+  /* Mobile button improvements */
+  @media (max-width: 640px) {
+    button {
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+    }
+    
+    button.h-8 {
+      height: 2rem;
+      width: 2rem;
+      padding: 0;
+    }
   }
 
   /* Prevent text selection on interactive elements */
@@ -392,5 +783,149 @@
 
   .border-info {
     border-color: hsl(var(--info));
+  }
+
+  /* Checkbox customizado para despesas futuras - Estilos únicos e descritivos */
+  .future-expense-completion-checkbox-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .future-expense-completion-checkbox-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+  }
+
+  .future-expense-completion-checkbox-unchecked {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--background));
+  }
+
+  .future-expense-completion-checkbox-unchecked:hover {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.1);
+    transform: scale(1.05);
+  }
+
+  .future-expense-completion-checkbox-checked {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .future-expense-completion-checkbox-checked:hover {
+    background-color: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+    transform: scale(1.05);
+  }
+
+  .future-expense-completion-checkbox-checkmark {
+    width: 12px;
+    height: 12px;
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* Modo escuro para o checkbox customizado */
+  .dark .future-expense-completion-checkbox-unchecked {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--background));
+  }
+
+  .dark .future-expense-completion-checkbox-unchecked:hover {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.1);
+    transform: scale(1.05);
+  }
+
+  .dark .future-expense-completion-checkbox-checked {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .dark .future-expense-completion-checkbox-checked:hover {
+    background-color: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+    transform: scale(1.05);
+  }
+
+  /* Checkbox customizado para relatórios - Estilos únicos e descritivos */
+  .general-report-selection-checkbox-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .general-report-selection-checkbox-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+  }
+
+  .general-report-selection-checkbox-unchecked {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--background));
+  }
+
+  .general-report-selection-checkbox-unchecked:hover {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.1);
+    transform: scale(1.05);
+  }
+
+  .general-report-selection-checkbox-checked {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .general-report-selection-checkbox-checked:hover {
+    background-color: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+    transform: scale(1.05);
+  }
+
+  .general-report-selection-checkbox-checkmark {
+    width: 10px;
+    height: 10px;
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* Modo escuro para o checkbox de relatórios */
+  .dark .general-report-selection-checkbox-unchecked {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--background));
+  }
+
+  .dark .general-report-selection-checkbox-unchecked:hover {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.1);
+    transform: scale(1.05);
+  }
+
+  .dark .general-report-selection-checkbox-checked {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .dark .general-report-selection-checkbox-checked:hover {
+    background-color: hsl(var(--primary) / 0.9);
+    border-color: hsl(var(--primary) / 0.9);
+    transform: scale(1.05);
   }
 }

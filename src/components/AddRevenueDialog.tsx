@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Plus, Loader2 } from "lucide-react";
 import { useAddRevenue } from "@/hooks/useRevenues";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 interface AddRevenueDialogProps {
   carId: string;
@@ -15,6 +16,7 @@ interface AddRevenueDialogProps {
 
 export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
   const [open, setOpen] = useState(false);
+  const { clickSound, successSound } = useSoundEffects();
   const [formData, setFormData] = useState({
     description: "",
     value: "",
@@ -47,6 +49,7 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
         type: formData.type,
       });
 
+      successSound(); // Som de sucesso ao adicionar receita
       resetForm();
       setOpen(false);
     } catch (error) {
@@ -55,6 +58,9 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      clickSound(); // Som ao abrir dialog
+    }
     setOpen(newOpen);
     if (!newOpen) {
       resetForm();
@@ -66,9 +72,9 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Receita
+        <Button className="w-full sm:w-auto">
+          <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden xs:inline">Adicionar </span>Receita
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[85vh] flex flex-col">

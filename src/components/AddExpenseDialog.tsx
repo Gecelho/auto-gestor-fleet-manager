@@ -9,6 +9,7 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { MileageInput } from "@/components/ui/mileage-input";
 import { Plus, Loader2 } from "lucide-react";
 import { useAddExpense } from "@/hooks/useExpenses";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 interface AddExpenseDialogProps {
   carId: string;
@@ -16,6 +17,7 @@ interface AddExpenseDialogProps {
 
 export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
   const [open, setOpen] = useState(false);
+  const { clickSound, successSound } = useSoundEffects();
   const [formData, setFormData] = useState({
     description: "",
     observation: "",
@@ -58,6 +60,7 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
         date: formData.date,
       });
 
+      successSound(); // Som de sucesso ao adicionar despesa
       resetForm();
       setOpen(false);
     } catch (error) {
@@ -66,6 +69,9 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      clickSound(); // Som ao abrir dialog
+    }
     setOpen(newOpen);
     if (!newOpen) {
       resetForm();
@@ -77,9 +83,9 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Despesa
+        <Button className="w-full sm:w-auto">
+          <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden xs:inline">Adicionar </span>Despesa
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[85vh] flex flex-col">

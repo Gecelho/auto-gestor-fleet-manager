@@ -3,21 +3,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown, Loader2, Edit } from "lucide-react";
 import { useFutureExpenses, useToggleFutureExpenseCompletion, useToggleExpensePayment, useUpdateCarMileage, useCarCurrentMileage } from "@/hooks/useFutureExpenses";
 import { displayCurrency, displayMileage } from "@/lib/formatters";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 interface FutureExpensesPopupProps {
   carId: string;
   carModel: string;
   carBrand: string;
   currentMileage: number;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function FutureExpensesPopup({ carId, carModel, carBrand, currentMileage }: FutureExpensesPopupProps) {
-  const [open, setOpen] = useState(false);
+export function FutureExpensesPopup({ 
+  carId, 
+  carModel, 
+  carBrand, 
+  currentMileage, 
+  open: externalOpen, 
+  onOpenChange: externalOnOpenChange 
+}: FutureExpensesPopupProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Usar estado externo se fornecido, senão usar interno
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
+  
+  const { clickSound, successSound } = useSoundEffects();
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [editingMileage, setEditingMileage] = useState(false);
   
@@ -33,9 +49,15 @@ export function FutureExpensesPopup({ carId, carModel, carBrand, currentMileage 
 
   const handleToggleCompletion = (futureExpenseId: string, currentStatus: boolean, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+    const newStatus = !currentStatus;
+    if (newStatus) {
+      successSound(); // Som de sucesso quando marca como completo
+    } else {
+      clickSound(); // Som de click quando desmarca
+    }
     toggleCompletionMutation.mutate({
       futureExpenseId,
-      isCompleted: !currentStatus
+      isCompleted: newStatus
     });
   };
 
@@ -196,13 +218,36 @@ export function FutureExpensesPopup({ carId, carModel, carBrand, currentMileage 
                   className={`border rounded-lg p-4 ${statusClasses}`}
                 >
                   <div className="flex items-start gap-3">
-                    {/* Checkbox para marcar como completo */}
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={expense.is_completed}
-                        onCheckedChange={() => handleToggleCompletion(expense.future_expense_id, expense.is_completed)}
-                        className="mt-1"
-                      />
+                    {/* Checkbox customizado para marcar como completo */}
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleCompletion(expense.future_expense_id, expense.is_completed);
+                      }}
+                      className="future-expense-completion-checkbox-container mt-1 cursor-pointer"
+                    >
+                      <div className={`future-expense-completion-checkbox-box ${
+                        expense.is_completed 
+                          ? 'future-expense-completion-checkbox-checked' 
+                          : 'future-expense-completion-checkbox-unchecked'
+                      }`}>
+                        {expense.is_completed && (
+                          <svg 
+                            className="future-expense-completion-checkbox-checkmark" 
+                            viewBox="0 0 16 16" 
+                            fill="none" 
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path 
+                              d="M13.5 4.5L6 12L2.5 8.5" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex-1 space-y-2">

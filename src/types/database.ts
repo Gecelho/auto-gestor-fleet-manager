@@ -51,3 +51,42 @@ export interface CarWithFinancials extends Car {
   totalExpenses: number;
   remainingBalance: number;
 }
+
+export interface CarMileageConfig {
+  id: string;
+  car_id: string;
+  weekly_km_limit: number;
+  overage_rate_per_km: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WeeklyMileageControl {
+  id: string;
+  car_id: string;
+  week_start_date: string;
+  week_end_date: string;
+  planned_km: number;
+  used_km: number;
+  remaining_km: number;
+  overage_km: number;
+  overage_fee: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MileageBalance {
+  id: string;
+  car_id: string;
+  accumulated_km: number;
+  last_updated: string;
+}
+
+export interface WeeklyMileageSummary extends WeeklyMileageControl {
+  car_name: string;
+  car_plate: string;
+  driver_name?: string;
+  weekly_km_limit: number;
+  overage_rate_per_km: number;
+  accumulated_km: number;
+}

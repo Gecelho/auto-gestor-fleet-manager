@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +12,7 @@ import { Loader2, Edit, Trash2 } from "lucide-react";
 import { EditRevenueDialog } from "@/components/EditRevenueDialog";
 import { DeleteRevenueDialog } from "@/components/DeleteRevenueDialog";
 import { displayCurrency, formatCurrency } from "@/lib/formatters";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 interface Revenue {
   id: string;
@@ -81,6 +81,8 @@ const CustomXAxisTick = (props: any) => {
 };
 
 export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInlineViewProps) {
+  const { clickSound, successSound } = useSoundEffects();
+  
   // Função para truncar texto
   const truncateText = (text: string, maxLength: number = 30) => {
     if (text.length <= maxLength) return text;
@@ -152,6 +154,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
   };
 
   const handleEditToggle = (weekKey: string, week: WeekData) => {
+    clickSound(); // Som ao clicar no botão de editar
     if (!showingInputs[weekKey]) {
       initializeEditingWeek(weekKey, week);
     }
@@ -196,6 +199,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
           }
         }
       }
+      successSound(); // Som de sucesso ao salvar receitas da semana
     } catch (error) {
       console.error('Error saving weekly revenue:', error);
     } finally {
@@ -232,42 +236,42 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
         }
 
         return (
-          <Card key={weekKey} className="p-4 mb-4 overflow-hidden">
-            {/* Header da semana com botão de editar menor */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h4 className="text-base font-semibold">
+          <div key={weekKey} className="card-modern mobile-p-4 p-6 mobile-mb-4 mb-6">
+            {/* Header da semana */}
+            <div className="flex justify-between items-start mb-4 sm:mb-6">
+              <div className="flex-1 min-w-0 mr-3">
+                <h4 className="text-base sm:text-lg font-semibold">
                   {format(week.weekStart, 'dd', { locale: ptBR })} de {format(week.weekStart, 'MMM', { locale: ptBR })}. - {format(week.weekEnd, 'dd', { locale: ptBR })} de {format(week.weekEnd, 'MMM', { locale: ptBR })}.
                 </h4>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {week.revenues.length} receita(s) • Total: {displayCurrency(week.totalValue)}
                 </p>
               </div>
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="h-8 w-8 flex-shrink-0"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl flex-shrink-0"
                 onClick={() => handleEditToggle(weekKey, week)}
               >
-                <Edit className="w-3 h-3" />
+                <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>
 
-            {/* Gráfico com altura maior para melhor visualização */}
-            <div className="h-64 w-full mb-3 overflow-hidden relative">
+            {/* Gráfico */}
+            <div className="h-48 sm:h-64 w-full mb-4 sm:mb-6 overflow-hidden relative bg-muted/30 rounded-lg sm:rounded-xl p-2 sm:p-4">
               <ChartContainer
                 config={{
                   value: {
                     label: "Receita",
-                    color: "#4285F4",
+                    color: "hsl(var(--success))",
                   },
                 }}
-                className="h-full w-full relative z-0"
+                className="h-full w-full"
               >
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={chartData} 
-                    margin={{ top: 25, right: 20, left: 20, bottom: 2 }}
+                    margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
                     barCategoryGap="15%"
                   >
                     <XAxis 
@@ -282,8 +286,8 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                     <Bar 
                       dataKey="value" 
                       fill="hsl(var(--success))" 
-                      radius={[3, 3, 0, 0]}
-                      barSize={15}
+                      radius={[4, 4, 0, 0]}
+                      barSize={14}
                       maxBarSize={20}
                     >
                       <LabelList 
@@ -291,10 +295,11 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                         position="top" 
                         formatter={(value: number) => value > 0 ? `R$ ${value.toLocaleString('pt-BR')}` : ''}
                         style={{ 
-                          fontSize: '10px', 
+                          fontSize: '9px', 
                           fontWeight: '600', 
                           fill: 'hsl(var(--card-foreground))' 
                         }}
+                        className="hidden sm:block"
                       />
                     </Bar>
                   </BarChart>
@@ -402,7 +407,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                 </div>
               </div>
             )}
-          </Card>
+          </div>
         );
       })}
     </div>

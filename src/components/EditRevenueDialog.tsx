@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Edit, Loader2 } from "lucide-react";
 import { useUpdateRevenue } from "@/hooks/useRevenues";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { Revenue } from "@/types/database";
 import { formatCurrency } from "@/lib/formatters";
 
@@ -17,6 +18,7 @@ interface EditRevenueDialogProps {
 
 export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
   const [open, setOpen] = useState(false);
+  const { clickSound, successSound } = useSoundEffects();
   const [formData, setFormData] = useState({
     description: revenue.description,
     value: formatCurrency((revenue.value * 100).toString()),
@@ -49,6 +51,7 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
         type: formData.type,
       });
 
+      successSound(); // Som de sucesso ao editar receita
       setOpen(false);
     } catch (error) {
       console.error("Error updating revenue:", error);
@@ -56,6 +59,9 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      clickSound(); // Som ao abrir dialog
+    }
     setOpen(newOpen);
     if (!newOpen) {
       resetForm();

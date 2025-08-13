@@ -12,14 +12,12 @@ interface HeaderProps {
 
 export function Header({ searchTerm, onSearchChange }: HeaderProps) {
   return (
-    <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-border/20 transition-colors duration-300">
-      {/* Mobile-First Header Layout */}
-      <div className="flex flex-col gap-4 sm:gap-6">
-        {/* Top Row: Title + Add Button */}
+    <div className="card-modern mobile-p-4 p-6">
+      <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-center">
+        {/* App Title */}
         <div className="flex items-center justify-between">
-          {/* App Title - Mobile Optimized */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="p-2 sm:p-2.5 bg-primary rounded-lg sm:rounded-xl shadow-lg transition-colors duration-300">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-primary rounded-lg sm:rounded-xl shadow-soft">
               <Car className="w-5 h-5 sm:w-7 sm:h-7 text-primary-foreground" />
             </div>
             <div>
@@ -29,24 +27,30 @@ export function Header({ searchTerm, onSearchChange }: HeaderProps) {
               <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Gerencie sua frota com estilo</p>
             </div>
           </div>
-
-          {/* Action Buttons - Always visible */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          
+          {/* Mobile Actions - Only on small screens */}
+          <div className="flex items-center gap-2 sm:hidden">
             <AddCarDialog />
             <SettingsDialog />
           </div>
         </div>
 
-        {/* Search Row - Full Width on Mobile */}
-        <div className="w-full">
-          <div className="relative">
+        {/* Search and Desktop Actions */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 lg:ml-auto lg:flex-1 lg:max-w-md">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar carros..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-10 bg-background/50 border-border focus:border-primary focus:ring-primary/20 rounded-lg sm:rounded-xl transition-colors duration-300"
+              className="pl-10 bg-background border-border focus:border-primary focus:ring-primary/20 h-10 sm:h-auto"
             />
+          </div>
+          
+          {/* Desktop Actions - Hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-3">
+            <AddCarDialog />
+            <SettingsDialog />
           </div>
         </div>
       </div>

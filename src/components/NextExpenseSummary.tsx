@@ -1,8 +1,8 @@
-import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
 import { FutureExpensesPopup } from "./FutureExpensesPopup";
-import { useToggleFutureExpenseCompletion } from "@/hooks/useFutureExpenses";
 import { displayCurrency, displayMileage } from "@/lib/formatters";
 import type { FutureExpense } from "@/hooks/useFutureExpenses";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 interface NextExpenseSummaryProps {
   nextExpense: FutureExpense | null;
@@ -19,21 +19,21 @@ export function NextExpenseSummary({
   carBrand, 
   currentMileage 
 }: NextExpenseSummaryProps) {
-  const toggleCompletionMutation = useToggleFutureExpenseCompletion();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const { clickSound } = useSoundEffects();
 
-  const handleToggleCompletion = (e: React.MouseEvent) => {
+  const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Evita que o clique se propague para o card do carro
-    if (nextExpense) {
-      toggleCompletionMutation.mutate({
-        futureExpenseId: nextExpense.future_expense_id,
-        isCompleted: !nextExpense.is_completed
-      });
-    }
+    clickSound(); // Som ao clicar no card
+    setIsPopupOpen(true);
   };
 
   if (!nextExpense) {
     return (
-      <div className="bg-muted rounded-md sm:rounded-lg p-2 sm:p-3">
+      <div 
+        className="bg-muted rounded-md sm:rounded-lg p-2 sm:p-3 cursor-pointer hover:bg-muted/80 transition-colors"
+        onClick={handleCardClick}
+      >
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <p className="text-xs text-muted-foreground mb-0.5 sm:mb-1">KM atual: {displayMileage(currentMileage)}</p>
@@ -45,6 +45,8 @@ export function NextExpenseSummary({
               carModel={carModel}
               carBrand={carBrand}
               currentMileage={currentMileage}
+              open={isPopupOpen}
+              onOpenChange={setIsPopupOpen}
             />
           </div>
         </div>
@@ -57,21 +59,15 @@ export function NextExpenseSummary({
   const isDistant = nextExpense.km_remaining > 3000;
 
   return (
-    <div className={`rounded-md sm:rounded-lg p-2 sm:p-3 ${
-      isOverdue ? 'bg-danger-light border border-danger/20' :
-      isNear ? 'bg-warning-light border border-warning/20' :
-      'bg-success-light border border-success/20'
-    }`}>
+    <div 
+      className={`rounded-md sm:rounded-lg p-2 sm:p-3 cursor-pointer transition-all hover:shadow-md ${
+        isOverdue ? 'bg-danger-light border border-danger/20 hover:bg-danger-light/80' :
+        isNear ? 'bg-warning-light border border-warning/20 hover:bg-warning-light/80' :
+        'bg-success-light border border-success/20 hover:bg-success-light/80'
+      }`}
+      onClick={handleCardClick}
+    >
       <div className="flex items-start gap-2 sm:gap-3">
-        {/* Checkbox compacto */}
-        <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 mt-0.5">
-          <Checkbox
-            checked={nextExpense.is_completed}
-            onCheckedChange={handleToggleCompletion}
-            className="w-3 h-3 sm:w-4 sm:h-4"
-          />
-        </div>
-
         <div className="flex-1 min-w-0">
           {/* Info compacta - Mobile First */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 mb-1 sm:mb-1">
@@ -122,6 +118,8 @@ export function NextExpenseSummary({
             carModel={carModel}
             carBrand={carBrand}
             currentMileage={currentMileage}
+            open={isPopupOpen}
+            onOpenChange={setIsPopupOpen}
           />
         </div>
       </div>

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useAddCar } from "@/hooks/useCars";
 import { useImageUpload } from "@/hooks/useImageUpload";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { Plus } from "lucide-react";
 
 interface AddCarForm {
@@ -39,6 +40,7 @@ export function AddCarDialog() {
   const [open, setOpen] = useState(false);
   const { mutate: addCar, isPending } = useAddCar();
   const { uploadImage, uploading } = useImageUpload();
+  const { clickSound, successSound } = useSoundEffects();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
@@ -83,6 +85,7 @@ export function AddCarDialog() {
         image_url: imageUrl,
       });
 
+      successSound(); // Som de sucesso ao adicionar carro
       setOpen(false);
       reset();
       setSelectedImage(null);
@@ -93,6 +96,9 @@ export function AddCarDialog() {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      clickSound(); // Som ao abrir dialog
+    }
     setOpen(newOpen);
     if (!newOpen) {
       reset();
@@ -234,7 +240,10 @@ export function AddCarDialog() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => handleOpenChange(false)}
+                onClick={() => {
+                  clickSound(); // Som ao cancelar
+                  handleOpenChange(false);
+                }}
                 className="w-full sm:w-auto"
               >
                 Cancelar

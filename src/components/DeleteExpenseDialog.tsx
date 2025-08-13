@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
 import { useDeleteExpense } from "@/hooks/useExpenses";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 interface DeleteExpenseDialogProps {
   expenseId: string;
@@ -13,10 +14,12 @@ interface DeleteExpenseDialogProps {
 export function DeleteExpenseDialog({ expenseId, expenseDescription }: DeleteExpenseDialogProps) {
   const [open, setOpen] = useState(false);
   const deleteExpenseMutation = useDeleteExpense();
+  const { clickSound, successSound } = useSoundEffects();
 
   const handleDelete = async () => {
     try {
       await deleteExpenseMutation.mutateAsync(expenseId);
+      successSound(); // Som de sucesso ao deletar despesa
       setOpen(false);
     } catch (error) {
       console.error("Error deleting expense:", error);

@@ -9,6 +9,7 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { MileageInput } from "@/components/ui/mileage-input";
 import { Edit, Loader2 } from "lucide-react";
 import { useUpdateExpense } from "@/hooks/useExpenses";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { formatCurrency, formatMileage } from "@/lib/formatters";
 
 interface Expense {
@@ -29,6 +30,7 @@ interface EditExpenseDialogProps {
 
 export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
   const [open, setOpen] = useState(false);
+  const { clickSound, successSound } = useSoundEffects();
   const [formData, setFormData] = useState({
     description: expense.description,
     observation: expense.observation || "",
@@ -71,6 +73,7 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
         date: formData.date,
       });
 
+      successSound(); // Som de sucesso ao editar despesa
       setOpen(false);
     } catch (error) {
       console.error("Error updating expense:", error);
@@ -78,6 +81,9 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      clickSound(); // Som ao abrir dialog
+    }
     setOpen(newOpen);
     if (!newOpen) {
       resetForm();

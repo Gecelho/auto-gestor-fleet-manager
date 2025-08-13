@@ -1,7 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
+import { SoundTabsTrigger } from "@/components/ui/sound-tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Phone, MessageCircle, Loader2, Plus } from "lucide-react";
 import { useCarDetails } from "@/hooks/useCarDetails";
@@ -21,11 +22,13 @@ import { displayCurrency, displayMileage } from "@/lib/formatters";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { EndOfContentIndicator } from "@/components/EndOfContentIndicator";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 export default function CarDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { data, isLoading, error } = useCarDetails(id!);
+  const { clickSound } = useSoundEffects();
 
   // Função para truncar texto
   const truncateText = (text: string, maxLength: number = 30) => {
@@ -72,96 +75,118 @@ export default function CarDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-3 sm:p-4 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-        {/* Mobile-Optimized Header */}
-        <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-border/20 transition-colors duration-300">
-          <div className="flex flex-col gap-4">
-            {/* Top Row: Back Button + Actions */}
-            <div className="flex items-center justify-between">
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => navigate("/")}
-                className="rounded-lg sm:rounded-xl flex-shrink-0"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              
-              <div className="flex items-center space-x-2">
-                <EditCarDialog car={car} />
-                <DeleteCarDialog 
-                  carId={car.id} 
-                  carName={car.name}
-                  onDelete={handleDeleteSuccess}
-                />
+    <div className="min-h-screen bg-background">
+      <div className="container-modern space-y-6 page-transition">
+        {/* Header */}
+        <div className="card-modern mobile-p-4 p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => {
+                clickSound(); // Som ao voltar
+                navigate("/");
+              }}
+              className="rounded-lg sm:rounded-xl h-9 w-9 sm:h-10 sm:w-10"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            
+            <div className="flex items-center gap-2 sm:gap-3">
+              <EditCarDialog car={car} />
+              <DeleteCarDialog 
+                carId={car.id} 
+                carName={car.name}
+                onDelete={handleDeleteSuccess}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 sm:space-y-4">
+            {/* Mobile Layout */}
+            <div className="sm:hidden">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <h1 className="text-xl font-bold gradient-text flex-1">
+                  {car.name}
+                </h1>
+                <Badge className={`${statusConfig[car.status].className} rounded-lg text-sm px-3 py-1.5 flex-shrink-0`}>
+                  {statusConfig[car.status].label}
+                </Badge>
               </div>
+              <p className="text-base text-muted-foreground font-medium">{car.plate}</p>
             </div>
 
-            {/* Car Info Row */}
-            <div className="flex items-center justify-between">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
-                  <h1 className="text-lg sm:text-2xl font-bold gradient-text truncate">
-                    {car.name}
-                  </h1>
-                  <Badge className={`${statusConfig[car.status].className} rounded-lg w-fit`}>
-                    {statusConfig[car.status].label}
-                  </Badge>
-                </div>
-                <p className="text-sm sm:text-base text-muted-foreground font-medium">{car.plate}</p>
+            {/* Desktop Layout */}
+            <div className="hidden sm:flex sm:items-start sm:justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl lg:text-3xl font-bold gradient-text mb-2">
+                  {car.name}
+                </h1>
+                <p className="text-lg text-muted-foreground font-medium">{car.plate}</p>
+              </div>
+              <div className="flex-shrink-0">
+                <Badge className={`${statusConfig[car.status].className} rounded-lg text-sm px-3 py-1.5`}>
+                  {statusConfig[car.status].label}
+                </Badge>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile-First Layout: Stack on Mobile, Side by Side on Desktop */}
-        <div className="space-y-4 sm:space-y-6 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-6">
-          {/* Car Image - Mobile Optimized */}
+        {/* Layout: Image and Financial Summary */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Car Image */}
           <div className="lg:col-span-1">
-            <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg border border-border/20 transition-colors duration-300">
-              <div className="aspect-video rounded-lg sm:rounded-xl overflow-hidden bg-muted">
-                <img 
-                  src={imageUrl} 
-                  alt={car.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
-                  }}
-                />
+            <div className="card-modern mobile-p-3 p-4 h-full flex flex-col">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="w-full max-w-sm mx-auto">
+                  <div className="aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 shadow-inner border border-border/50 group">
+                    <img 
+                      src={imageUrl} 
+                      alt={car.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ease-out"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
+                      }}
+                    />
+                  </div>
+                  <div className="mt-3 text-center">
+                    <p className="text-xs text-muted-foreground font-medium">Foto do {car.name}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Financial Summary - Mobile Grid */}
+          {/* Financial Summary */}
           <div className="lg:col-span-2">
-            <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-border/20 transition-colors duration-300">
-              <h3 className="text-base sm:text-lg font-bold text-card-foreground mb-3 sm:mb-4">Resumo Financeiro</h3>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="card-modern mobile-p-4 p-6 h-full flex flex-col">
+              <h3 className="text-lg sm:text-xl font-bold text-card-foreground mb-4 sm:mb-6">Resumo Financeiro</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 flex-1">
                 <div className="bg-info-light rounded-lg sm:rounded-xl p-3 sm:p-4 border border-info/20">
-                  <p className="text-xs text-info font-medium mb-1">Valor de Compra</p>
-                  <p className="text-sm sm:text-xl font-bold text-info">{displayCurrency(car.purchase_value)}</p>
+                  <p className="text-xs sm:text-sm text-info font-medium mb-1">Valor de Compra</p>
+                  <p className="text-base sm:text-xl font-bold text-info">{displayCurrency(car.purchase_value)}</p>
                 </div>
                 <div className="bg-success-light rounded-lg sm:rounded-xl p-3 sm:p-4 border border-success/20">
-                  <p className="text-xs text-success font-medium mb-1">Total Receitas</p>
-                  <p className="text-sm sm:text-xl font-bold text-success">{displayCurrency(totalRevenues)}</p>
+                  <p className="text-xs sm:text-sm text-success font-medium mb-1">Total Receitas</p>
+                  <p className="text-base sm:text-xl font-bold text-success">{displayCurrency(totalRevenues)}</p>
                 </div>
                 <div className="bg-danger-light rounded-lg sm:rounded-xl p-3 sm:p-4 border border-danger/20">
-                  <p className="text-xs text-danger font-medium mb-1">Total Despesas</p>
-                  <p className="text-sm sm:text-xl font-bold text-danger">{displayCurrency(totalExpenses)}</p>
+                  <p className="text-xs sm:text-sm text-danger font-medium mb-1">Total Despesas</p>
+                  <p className="text-base sm:text-xl font-bold text-danger">{displayCurrency(totalExpenses)}</p>
                 </div>
                 <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border ${
                   netProfit >= 0 
                     ? 'bg-info-light border-info/20' 
                     : 'bg-warning-light border-warning/20'
                 }`}>
-                  <p className={`text-xs font-medium mb-1 ${
+                  <p className={`text-xs sm:text-sm font-medium mb-1 ${
                     netProfit >= 0 ? 'text-info' : 'text-warning'
                   }`}>
                     {netProfit >= 0 ? 'Lucro Líquido' : 'Prejuízo'}
                   </p>
-                  <p className={`text-sm sm:text-xl font-bold ${
+                  <p className={`text-base sm:text-xl font-bold ${
                     netProfit >= 0 ? 'text-info' : 'text-warning'
                   }`}>
                     {displayCurrency(Math.abs(netProfit))}
@@ -169,77 +194,75 @@ export default function CarDetail() {
                 </div>
               </div>
               
-              {/* Botão de Relatório Mensal */}
-              <div className="mt-4">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
                 <MonthlyReportDialog carId={car.id} carName={car.name} />
               </div>
-
             </div>
           </div>
         </div>
 
-        {/* Tabs - Mobile Optimized */}
+        {/* Tabs */}
         <Tabs defaultValue="info" className="space-y-4 sm:space-y-6">
-          <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-lg border border-border/20 transition-colors duration-300">
-            <TabsList className="grid w-full grid-cols-4 bg-transparent gap-0.5 sm:gap-1">
-              <TabsTrigger 
+          <div className="card-modern mobile-p-3 p-3">
+            <TabsList className="grid w-full grid-cols-4 bg-transparent gap-1 sm:gap-2 h-auto">
+              <SoundTabsTrigger 
                 value="info" 
-                className="rounded-lg sm:rounded-xl data-[state=active]:bg-info data-[state=active]:text-info-foreground data-[state=active]:shadow-lg transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="rounded-lg sm:rounded-xl data-[state=active]:bg-info data-[state=active]:text-info-foreground data-[state=active]:shadow-soft transition-all duration-200 text-xs sm:text-sm px-1.5 sm:px-3 py-2 sm:py-2.5 min-h-[36px] sm:min-h-[40px] flex items-center justify-center font-medium"
               >
                 Info
-              </TabsTrigger>
-              <TabsTrigger 
+              </SoundTabsTrigger>
+              <SoundTabsTrigger 
                 value="expenses" 
-                className="rounded-lg sm:rounded-xl data-[state=active]:bg-danger data-[state=active]:text-danger-foreground data-[state=active]:shadow-lg transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="rounded-lg sm:rounded-xl data-[state=active]:bg-danger data-[state=active]:text-danger-foreground data-[state=active]:shadow-soft transition-all duration-200 text-xs sm:text-sm px-1.5 sm:px-3 py-2 sm:py-2.5 min-h-[36px] sm:min-h-[40px] flex items-center justify-center font-medium"
               >
                 Despesas
-              </TabsTrigger>
-              <TabsTrigger 
+              </SoundTabsTrigger>
+              <SoundTabsTrigger 
                 value="revenues" 
-                className="rounded-lg sm:rounded-xl data-[state=active]:bg-success data-[state=active]:text-success-foreground data-[state=active]:shadow-lg transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="rounded-lg sm:rounded-xl data-[state=active]:bg-success data-[state=active]:text-success-foreground data-[state=active]:shadow-soft transition-all duration-200 text-xs sm:text-sm px-1.5 sm:px-3 py-2 sm:py-2.5 min-h-[36px] sm:min-h-[40px] flex items-center justify-center font-medium"
               >
                 Receitas
-              </TabsTrigger>
-              <TabsTrigger 
+              </SoundTabsTrigger>
+              <SoundTabsTrigger 
                 value="driver" 
-                className="rounded-lg sm:rounded-xl data-[state=active]:bg-warning data-[state=active]:text-warning-foreground data-[state=active]:shadow-lg transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="rounded-lg sm:rounded-xl data-[state=active]:bg-warning data-[state=active]:text-warning-foreground data-[state=active]:shadow-soft transition-all duration-200 text-xs sm:text-sm px-1.5 sm:px-3 py-2 sm:py-2.5 min-h-[36px] sm:min-h-[40px] flex items-center justify-center font-medium"
               >
                 Motorista
-              </TabsTrigger>
+              </SoundTabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="info">
-            <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-border/20 transition-colors duration-300">
+            <div className="card-modern mobile-p-4 p-6">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-base sm:text-xl font-bold text-card-foreground">Informações Gerais</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-card-foreground">Informações Gerais</h3>
                 <EditCarInfoDialog carId={car.id} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
                 <div className="bg-info-light rounded-lg sm:rounded-xl p-3 sm:p-4 border border-info/20">
-                  <p className="text-xs text-info font-medium mb-1">Forma de Pagamento</p>
+                  <p className="text-xs sm:text-sm text-info font-medium mb-1">Forma de Pagamento</p>
                   <p className="text-sm sm:text-base font-bold text-info">{car.payment_method || "Não informado"}</p>
                 </div>
                 <div className="bg-success-light rounded-lg sm:rounded-xl p-3 sm:p-4 border border-success/20">
-                  <p className="text-xs text-success font-medium mb-1">Data da Compra</p>
+                  <p className="text-xs sm:text-sm text-success font-medium mb-1">Data da Compra</p>
                   <p className="text-sm sm:text-base font-bold text-success">
                     {car.purchase_date ? format(parseISO(car.purchase_date), 'dd/MM/yyyy', { locale: ptBR }) : "Não informado"}
                   </p>
                 </div>
                 <div className="bg-info-light rounded-lg sm:rounded-xl p-3 sm:p-4 border border-info/20">
-                  <p className="text-xs text-info font-medium mb-1">Quilometragem</p>
+                  <p className="text-xs sm:text-sm text-info font-medium mb-1">Quilometragem</p>
                   <p className="text-sm sm:text-base font-bold text-info">
                     {car.mileage ? `${car.mileage.toLocaleString("pt-BR")} km` : "Não informado"}
                   </p>
                 </div>
                 <div className="bg-warning-light rounded-lg sm:rounded-xl p-3 sm:p-4 border border-warning/20">
-                  <p className="text-xs text-warning font-medium mb-1">Falta para Quitar</p>
+                  <p className="text-xs sm:text-sm text-warning font-medium mb-1">Falta para Quitar</p>
                   <p className="text-sm sm:text-base font-bold text-warning">R$ {remainingBalance.toLocaleString("pt-BR")}</p>
                 </div>
               </div>
               {car.notes && (
                 <div className="mt-4 sm:mt-6 bg-muted rounded-lg sm:rounded-xl p-3 sm:p-4 border border-border">
-                  <p className="text-xs text-muted-foreground font-medium mb-2">Observações</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-2">Observações</p>
                   <p className="text-sm sm:text-base font-medium text-card-foreground">{car.notes}</p>
                 </div>
               )}
@@ -248,9 +271,13 @@ export default function CarDetail() {
 
           <TabsContent value="expenses">
             <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-border/20 transition-colors duration-300">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-base sm:text-xl font-bold text-card-foreground">Despesas</h3>
-                <AddExpenseDialog carId={car.id} />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-xl font-bold text-card-foreground text-center sm:text-left">Despesas</h3>
+                <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                  <div className="w-full max-w-[200px] sm:w-auto sm:max-w-none">
+                    <AddExpenseDialog carId={car.id} />
+                  </div>
+                </div>
               </div>
               <div className="space-y-3 sm:space-y-4">
                 {expenses.length === 0 ? (
@@ -313,9 +340,13 @@ export default function CarDetail() {
 
           <TabsContent value="revenues">
             <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-border/20 transition-colors duration-300">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-base sm:text-xl font-bold text-card-foreground">Receitas por Semana</h3>
-                <AddRevenueDialog carId={car.id} />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-xl font-bold text-card-foreground text-center sm:text-left">Receitas por Semana</h3>
+                <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                  <div className="w-full max-w-[200px] sm:w-auto sm:max-w-none">
+                    <AddRevenueDialog carId={car.id} />
+                  </div>
+                </div>
               </div>
               <WeeklyRevenueInlineView revenues={revenues} carId={car.id} />
             </div>
@@ -323,9 +354,13 @@ export default function CarDetail() {
 
           <TabsContent value="driver">
             <div className="bg-card/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-border/20 transition-colors duration-300">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-base sm:text-xl font-bold text-card-foreground">Dados do Motorista</h3>
-                <EditDriverDialog driver={driver} carId={car.id} />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-xl font-bold text-card-foreground text-center sm:text-left">Dados do Motorista</h3>
+                <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                  <div className="w-full max-w-[200px] sm:w-auto sm:max-w-none">
+                    <EditDriverDialog driver={driver} carId={car.id} />
+                  </div>
+                </div>
               </div>
               {driver ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
