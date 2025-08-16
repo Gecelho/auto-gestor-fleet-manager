@@ -39,7 +39,7 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
     next_mileage: expense.next_mileage ? formatMileage(expense.next_mileage.toString()) : "",
     nextMileageNumeric: expense.next_mileage || 0,
     date: expense.date,
-    value: formatCurrency((expense.value * 100).toString()),
+    value: formatCurrency(Math.round(expense.value * 100).toString()),
     valueNumeric: expense.value,
   });
 
@@ -54,7 +54,7 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
       next_mileage: expense.next_mileage ? formatMileage(expense.next_mileage.toString()) : "",
       nextMileageNumeric: expense.next_mileage || 0,
       date: expense.date,
-      value: formatCurrency((expense.value * 100).toString()),
+      value: formatCurrency(Math.round(expense.value * 100).toString()),
       valueNumeric: expense.value,
     });
   };
@@ -95,11 +95,11 @@ export function EditExpenseDialog({ expense }: EditExpenseDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Edit className="w-4 h-4" />
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+          <Edit className="w-3 h-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Editar Despesa</DialogTitle>
           <DialogDescription>

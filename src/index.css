@@ -266,18 +266,18 @@
   .container-modern {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 1rem; /* Padding uniforme em todas as direções */
+    padding: 0.75rem; /* Padding reduzido para melhor aproveitamento */
   }
 
   @media (min-width: 640px) {
     .container-modern {
-      padding: 1.5rem; /* Padding uniforme em todas as direções */
+      padding: 1rem; /* Padding reduzido */
     }
   }
 
   @media (min-width: 1024px) {
     .container-modern {
-      padding: 2rem; /* Padding uniforme em todas as direções */
+      padding: 1.5rem; /* Padding reduzido */
     }
   }
 
@@ -303,24 +303,31 @@
     }
   }
 
-  /* Responsive grid improvements */
+  /* Responsive grid improvements - More compact */
   .grid-responsive {
     display: grid;
-    gap: 1.5rem;
+    gap: 1rem;
     grid-template-columns: 1fr;
   }
 
   @media (min-width: 768px) {
     .grid-responsive {
       grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
+      gap: 1.5rem;
     }
   }
 
   @media (min-width: 1280px) {
     .grid-responsive {
       grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
+      gap: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .grid-responsive {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
     }
   }
 
@@ -363,6 +370,104 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* Modern SaaS-style utilities */
+  .saas-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .saas-card:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+  }
+
+  .saas-header {
+    background: hsl(var(--background));
+    border-bottom: 1px solid hsl(var(--border));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .saas-section {
+    padding: 2rem 0;
+  }
+
+  @media (min-width: 768px) {
+    .saas-section {
+      padding: 3rem 0;
+    }
+  }
+
+  /* Compact mobile styles */
+  @media (max-width: 640px) {
+    .mobile-compact {
+      padding: 0.75rem;
+    }
+    
+    .mobile-text-sm {
+      font-size: 0.75rem;
+    }
+    
+    .mobile-gap-2 {
+      gap: 0.5rem;
+    }
+
+    /* Mobile-specific card adjustments */
+    .mobile-card {
+      padding: 1rem;
+      border-radius: 1rem;
+    }
+
+    /* Mobile grid adjustments */
+    .mobile-grid-1 {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    /* Mobile header adjustments */
+    .mobile-header {
+      padding: 0.75rem 1rem;
+    }
+
+    /* Mobile button adjustments */
+    .mobile-btn {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Better mobile touch targets */
+  @media (max-width: 768px) {
+    button, .clickable {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Extra small screens */
+  @media (max-width: 475px) {
+    .xs\:hidden {
+      display: none;
+    }
+    
+    .xs\:inline-flex {
+      display: inline-flex;
+    }
+  }
+
+  @media (min-width: 476px) {
+    .xs\:hidden {
+      display: block;
+    }
+    
+    .xs\:inline-flex {
+      display: none;
     }
   }
 

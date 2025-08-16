@@ -115,12 +115,11 @@ export function EditCarDialog({ car }: EditCarDialogProps) {
       setOpen(newOpen);
     }}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Edit className="w-4 h-4 mr-2" />
-          Editar
+        <Button variant="outline" size="icon" className="h-8 w-8">
+          <Edit className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Editar Carro</DialogTitle>
           <DialogDescription>

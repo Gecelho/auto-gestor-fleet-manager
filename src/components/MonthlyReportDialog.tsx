@@ -55,7 +55,7 @@ export function MonthlyReportDialog({ carId, carName }: MonthlyReportDialogProps
           Relatório Mensal
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Relatório Financeiro{carName ? ` - ${carName}` : ''}</DialogTitle>
           <DialogDescription>

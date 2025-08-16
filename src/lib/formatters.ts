@@ -59,3 +59,24 @@ export const displayCurrency = (value: number): string => {
 export const displayMileage = (value: number): string => {
   return new Intl.NumberFormat('pt-BR').format(value);
 };
+
+// Função para formatar valor monetário de forma compacta (para mobile)
+export const displayCompactCurrency = (value: number): string => {
+  if (value >= 1000000) {
+    // Para valores acima de R$ 1.000.000, remove os centavos e adiciona ...
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(Math.floor(value)) + '...';
+  } else {
+    // Para valores até R$ 999.999,99, mostra completo
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+};

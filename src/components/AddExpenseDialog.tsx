@@ -88,7 +88,7 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
           <span className="hidden xs:inline">Adicionar </span>Despesa
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Adicionar Despesa</DialogTitle>
           <DialogDescription>

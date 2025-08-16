@@ -81,7 +81,7 @@ export function GeneralReportDialog() {
           Relatório Geral
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
+      <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Relatório Geral da Frota</DialogTitle>
           <DialogDescription>

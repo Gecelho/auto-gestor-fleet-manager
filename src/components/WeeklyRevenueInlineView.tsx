@@ -1,18 +1,10 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CurrencyInput } from "@/components/ui/currency-input";
 import { ChartContainer } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, LabelList } from "recharts";
 import { format, startOfWeek, endOfWeek, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useUpdateRevenue, useAddRevenue } from "@/hooks/useRevenues";
-import { Loader2, Edit, Trash2 } from "lucide-react";
 import { EditRevenueDialog } from "@/components/EditRevenueDialog";
 import { DeleteRevenueDialog } from "@/components/DeleteRevenueDialog";
-import { displayCurrency, formatCurrency } from "@/lib/formatters";
-import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { displayCurrency } from "@/lib/formatters";
 
 interface Revenue {
   id: string;
@@ -81,19 +73,11 @@ const CustomXAxisTick = (props: any) => {
 };
 
 export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInlineViewProps) {
-  const { clickSound, successSound } = useSoundEffects();
-  
   // Função para truncar texto
   const truncateText = (text: string, maxLength: number = 30) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
   };
-  const [editingWeeks, setEditingWeeks] = useState<{ [key: string]: { [key: string]: { formatted: string; numeric: number } } }>({});
-  const [loadingWeeks, setLoadingWeeks] = useState<{ [key: string]: boolean }>({});
-  const [showingInputs, setShowingInputs] = useState<{ [key: string]: boolean }>({});
-
-  const updateRevenueMutation = useUpdateRevenue();
-  const addRevenueMutation = useAddRevenue();
 
   const weeklyData = revenues.reduce((weeks: { [key: string]: WeekData }, revenue) => {
     const revenueDate = parseISO(revenue.date);
@@ -124,89 +108,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
     b.weekStart.getTime() - a.weekStart.getTime()
   );
 
-  const initializeEditingWeek = (weekKey: string, week: WeekData) => {
-    if (!editingWeeks[weekKey]) {
-      const values: { [key: string]: { formatted: string; numeric: number } } = {};
-      for (let i = 0; i < 7; i++) {
-        const day = addDays(week.weekStart, i);
-        const dayKey = format(day, 'yyyy-MM-dd');
-        const numericValue = week.dailyValues[dayKey] || 0;
-        values[dayKey] = {
-          formatted: formatCurrency((numericValue * 100).toString()),
-          numeric: numericValue
-        };
-      }
-      setEditingWeeks(prev => ({
-        ...prev,
-        [weekKey]: values
-      }));
-    }
-  };
 
-  const handleDailyValueChange = (weekKey: string, dayKey: string, formatted: string, numeric: number) => {
-    setEditingWeeks(prev => ({
-      ...prev,
-      [weekKey]: {
-        ...prev[weekKey],
-        [dayKey]: { formatted, numeric }
-      }
-    }));
-  };
-
-  const handleEditToggle = (weekKey: string, week: WeekData) => {
-    clickSound(); // Som ao clicar no botão de editar
-    if (!showingInputs[weekKey]) {
-      initializeEditingWeek(weekKey, week);
-    }
-    setShowingInputs(prev => ({
-      ...prev,
-      [weekKey]: !prev[weekKey]
-    }));
-  };
-
-  const handleSaveWeek = async (weekKey: string, week: WeekData) => {
-    if (!editingWeeks[weekKey]) return;
-
-    setLoadingWeeks(prev => ({ ...prev, [weekKey]: true }));
-
-    try {
-      for (let i = 0; i < 7; i++) {
-        const day = addDays(week.weekStart, i);
-        const dayKey = format(day, 'yyyy-MM-dd');
-        const newValue = editingWeeks[weekKey][dayKey]?.numeric || 0;
-        const existingValue = week.dailyValues[dayKey] || 0;
-
-        if (newValue !== existingValue) {
-          const dayRevenues = week.revenues.filter(r => r.date === dayKey);
-          
-          if (dayRevenues.length > 0) {
-            const revenue = dayRevenues[0];
-            await updateRevenueMutation.mutateAsync({
-              id: revenue.id,
-              description: revenue.description,
-              value: newValue,
-              date: dayKey,
-              type: revenue.type
-            });
-          } else if (newValue > 0) {
-            await addRevenueMutation.mutateAsync({
-              car_id: carId,
-              description: `Receita ${format(day, 'dd/MM', { locale: ptBR })}`,
-              value: newValue,
-              date: dayKey,
-              type: 'outros'
-            });
-          }
-        }
-      }
-      successSound(); // Som de sucesso ao salvar receitas da semana
-    } catch (error) {
-      console.error('Error saving weekly revenue:', error);
-    } finally {
-      setLoadingWeeks(prev => ({ ...prev, [weekKey]: false }));
-      setShowingInputs(prev => ({ ...prev, [weekKey]: false }));
-    }
-  };
 
   if (sortedWeeks.length === 0) {
     return (
@@ -224,7 +126,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
           const day = addDays(week.weekStart, i);
           const dayKey = format(day, 'yyyy-MM-dd');
           const dayNumber = format(day, 'dd');
-          const currentValue = editingWeeks[weekKey]?.[dayKey]?.numeric ?? week.dailyValues[dayKey] ?? 0;
+          const currentValue = week.dailyValues[dayKey] ?? 0;
           
           chartData.push({
             day: `${dayNames[i]}\n${dayNumber}`,
@@ -236,29 +138,21 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
         }
 
         return (
-          <div key={weekKey} className="card-modern mobile-p-4 p-6 mobile-mb-4 mb-6">
+          <div key={weekKey} className="bg-background border border-border rounded-xl p-6 mb-6">
             {/* Header da semana */}
-            <div className="flex justify-between items-start mb-4 sm:mb-6">
-              <div className="flex-1 min-w-0 mr-3">
-                <h4 className="text-base sm:text-lg font-semibold">
+            <div className="mb-4 sm:mb-6">
+              <div className="flex-1 min-w-0">
+                <h4 className="text-base sm:text-lg font-semibold text-foreground">
                   {format(week.weekStart, 'dd', { locale: ptBR })} de {format(week.weekStart, 'MMM', { locale: ptBR })}. - {format(week.weekEnd, 'dd', { locale: ptBR })} de {format(week.weekEnd, 'MMM', { locale: ptBR })}.
                 </h4>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {week.revenues.length} receita(s) • Total: {displayCurrency(week.totalValue)}
                 </p>
               </div>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl flex-shrink-0"
-                onClick={() => handleEditToggle(weekKey, week)}
-              >
-                <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
-              </Button>
             </div>
 
             {/* Gráfico */}
-            <div className="h-48 sm:h-64 w-full mb-4 sm:mb-6 overflow-hidden relative bg-muted/30 rounded-lg sm:rounded-xl p-2 sm:p-4">
+            <div className="h-48 sm:h-64 w-full mb-4 sm:mb-6 overflow-hidden relative bg-muted rounded-xl p-4">
               <ChartContainer
                 config={{
                   value: {
@@ -268,42 +162,39 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
                 }}
                 className="h-full w-full"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={chartData} 
-                    margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
-                    barCategoryGap="15%"
+                <BarChart 
+                  data={chartData} 
+                  margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
+                  barCategoryGap="15%"
+                >
+                  <XAxis 
+                    dataKey="day" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={<CustomXAxisTick />}
+                    interval={0}
+                    height={30}
+                  />
+                  <YAxis hide />
+                  <Bar 
+                    dataKey="value" 
+                    fill="hsl(var(--success))" 
+                    radius={[4, 4, 0, 0]}
+                    barSize={14}
+                    maxBarSize={20}
                   >
-                    <XAxis 
-                      dataKey="day" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={<CustomXAxisTick />}
-                      interval={0}
-                      height={30}
-                    />
-                    <YAxis hide />
-                    <Bar 
+                    <LabelList 
                       dataKey="value" 
-                      fill="hsl(var(--success))" 
-                      radius={[4, 4, 0, 0]}
-                      barSize={14}
-                      maxBarSize={20}
-                    >
-                      <LabelList 
-                        dataKey="value" 
-                        position="top" 
-                        formatter={(value: number) => value > 0 ? `R$ ${value.toLocaleString('pt-BR')}` : ''}
-                        style={{ 
-                          fontSize: '9px', 
-                          fontWeight: '600', 
-                          fill: 'hsl(var(--card-foreground))' 
-                        }}
-                        className="hidden sm:block"
-                      />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                      position="top" 
+                      formatter={(value: number) => value > 0 ? `R$ ${value.toLocaleString('pt-BR')}` : ''}
+                      style={{ 
+                        fontSize: '9px', 
+                        fontWeight: '600', 
+                        fill: 'hsl(var(--card-foreground))' 
+                      }}
+                    />
+                  </Bar>
+                </BarChart>
               </ChartContainer>
             </div>
 
@@ -370,43 +261,7 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
               </div>
             )}
 
-            {/* Inputs para edição rápida - só aparecem quando showingInputs[weekKey] é true */}
-            {showingInputs[weekKey] && (
-              <div className="space-y-3 border-t pt-4 mt-4">
-                <div className="grid grid-cols-7 gap-2 max-md:grid-cols-3 max-md:gap-3 max-sm:grid-cols-2">
-                  {chartData.map((dayData, index) => {
-                    const day = addDays(week.weekStart, index);
-                    const dayKey = format(day, 'yyyy-MM-dd');
-                    
-                    return (
-                      <div key={dayKey} className="space-y-1">
-                        <Label className="text-xs font-bold text-center block text-foreground">
-                          {dayData.day}
-                        </Label>
-                        <CurrencyInput
-                          value={editingWeeks[weekKey]?.[dayKey]?.formatted || '0,00'}
-                          onChange={(formatted, numeric) => handleDailyValueChange(weekKey, dayKey, formatted, numeric)}
-                          placeholder="0,00"
-                          className="text-center text-xs h-8"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
 
-                <div className="flex justify-end pt-4 border-t">
-                  <Button 
-                    onClick={() => handleSaveWeek(weekKey, week)} 
-                    disabled={loadingWeeks[weekKey]}
-                    size="sm"
-                    className="mt-2"
-                  >
-                    {loadingWeeks[weekKey] && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Salvar Alterações
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         );
       })}

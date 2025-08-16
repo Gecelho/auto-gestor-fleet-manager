@@ -1,10 +1,11 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Car, DollarSign, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
+import { Car, TrendingUp, TrendingDown, AlertCircle, ChevronRight } from "lucide-react";
 import { NextExpenseSummary } from "./NextExpenseSummary";
 import { useFutureExpenses, useCarCurrentMileage } from "@/hooks/useFutureExpenses";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
-import { displayCurrency } from "@/lib/formatters";
+import { displayCurrency, displayCompactCurrency } from "@/lib/formatters";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CarCardProps {
   id: string;
@@ -34,6 +35,7 @@ export function CarCard({
   onClick
 }: CarCardProps) {
   const { clickSound } = useSoundEffects();
+  const isMobile = useIsMobile();
   const netProfit = totalRevenue - totalExpenses;
   const isProfit = netProfit > 0;
   
@@ -43,9 +45,21 @@ export function CarCard({
   const nextExpense = futureExpenses?.[0] || null;
   
   const statusConfig = {
-    quitado: { label: "Quitado", className: "bg-success text-success-foreground" },
-    andamento: { label: "Em Andamento", className: "bg-warning text-warning-foreground" },
-    alugado: { label: "Alugado", className: "bg-info text-info-foreground" }
+    quitado: { 
+      label: "Quitado", 
+      className: "bg-green-100 text-green-700 border-green-200",
+      darkClassName: "dark:bg-green-900 dark:text-green-300 dark:border-green-800"
+    },
+    andamento: { 
+      label: "Em Andamento", 
+      className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+      darkClassName: "dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800"
+    },
+    alugado: { 
+      label: "Alugado", 
+      className: "bg-blue-100 text-blue-700 border-blue-200",
+      darkClassName: "dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800"
+    }
   };
 
   // Use only valid images from Supabase or placeholder
@@ -53,88 +67,101 @@ export function CarCard({
 
   return (
     <div 
-      className="card-modern mobile-p-3 p-5 cursor-pointer group"
+      className={`group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 hover:-translate-y-1 ${isMobile ? 'p-3' : 'p-6'}`}
       onClick={() => {
         clickSound(); // Som ao clicar no card
         onClick();
       }}
     >
-      {/* Header with Image and Status */}
-      <div className="flex items-start space-x-3 sm:space-x-4 mb-4 sm:mb-6">
-        <div className="w-14 h-14 sm:w-16 md:w-20 sm:h-16 md:h-20 rounded-lg sm:rounded-xl overflow-hidden bg-muted flex-shrink-0 shadow-soft">
-          <img 
-            src={imageUrl} 
-            alt={name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=400&h=300&fit=crop";
-            }}
-          />
+      {/* Header */}
+      <div className={`flex items-start justify-between ${isMobile ? 'mb-2' : 'mb-4'}`}>
+        <div className={`flex items-start flex-1 min-w-0 ${isMobile ? 'space-x-2' : 'space-x-3'}`}>
+          <div className={`rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 ${isMobile ? 'w-14 h-14' : 'w-12 h-12'}`}>
+            <img 
+              src={imageUrl} 
+              alt={name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w-400&h=300&fit=crop";
+              }}
+            />
+          </div>
+          <div className={`min-w-0 flex-1 flex flex-col justify-between ${isMobile ? 'h-14' : 'h-12'}`}>
+            <div>
+              <h3 className={`font-semibold text-gray-900 dark:text-gray-100 truncate leading-tight ${isMobile ? 'text-sm' : 'text-base'}`}>
+                {name}
+              </h3>
+              <p className={`text-gray-500 dark:text-gray-400 font-medium leading-tight ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                {plate}
+              </p>
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 flex items-end">
+              <span className={`font-semibold ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                {isMobile ? displayCompactCurrency(purchaseValue) : displayCurrency(purchaseValue)}
+              </span>
+            </div>
+          </div>
         </div>
         
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2 sm:mb-3">
-            <div className="min-w-0 flex-1 mr-2 sm:mr-3">
-              <h3 className="font-bold text-card-foreground truncate text-sm sm:text-base md:text-lg">{name}</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium">{plate}</p>
-            </div>
-            <Badge className={`${statusConfig[status].className} text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-sm flex-shrink-0`}>
-              {statusConfig[status].label}
-            </Badge>
-          </div>
-          
-          {/* Purchase Value */}
-          <div className="flex items-center text-muted-foreground">
-            <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-            <span className="text-xs sm:text-sm font-semibold">
-              {displayCurrency(purchaseValue)}
-            </span>
-          </div>
+        <div className={`flex items-center flex-shrink-0 ${isMobile ? 'space-x-0.5' : 'space-x-2'}`}>
+          <Badge className={`
+            border font-medium ${isMobile ? 'text-[9px] px-1.5 py-0.5 rounded' : 'text-xs px-2 py-1 rounded-lg'}
+            ${statusConfig[status].className} ${statusConfig[status].darkClassName}
+          `}>
+            {statusConfig[status].label}
+          </Badge>
+          <ChevronRight className={`text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors ${isMobile ? 'w-2.5 h-2.5' : 'w-4 h-4'}`} />
         </div>
       </div>
       
       {/* Financial Summary */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 mb-4 sm:mb-6">
-        <div className="bg-success-light rounded-md sm:rounded-lg p-1.5 sm:p-2 md:p-3 text-center border border-success/20">
-          <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-success mx-auto mb-0.5 sm:mb-1" />
-          <p className="text-xs mobile-text-xs text-success font-medium">Receita</p>
-          <p className="text-xs mobile-text-xs sm:text-sm font-bold text-success truncate">
-            {displayCurrency(totalRevenue)}
+      <div className={`grid grid-cols-3 ${isMobile ? 'gap-0.5 mb-2' : 'gap-3 mb-4'}`}>
+        <div className={`bg-green-50 dark:bg-green-950 rounded-lg text-center border border-green-200 dark:border-green-800 min-w-0 ${isMobile ? 'p-1.5' : 'p-3'}`}>
+          <TrendingUp className={`text-green-600 dark:text-green-400 mx-auto ${isMobile ? 'w-3 h-3 mb-1' : 'w-4 h-4 mb-1'}`} />
+          <p className={`text-green-600 dark:text-green-400 font-medium leading-tight ${isMobile ? 'text-[9px]' : 'text-xs'}`}>Receita</p>
+          <p className={`font-bold leading-tight truncate ${isMobile ? 'text-[9px] px-0' : 'text-xs px-0.5'} text-green-700 dark:text-green-300`} title={displayCurrency(totalRevenue)}>
+            {isMobile ? displayCompactCurrency(totalRevenue) : displayCurrency(totalRevenue)}
           </p>
         </div>
         
-        <div className="bg-danger-light rounded-md sm:rounded-lg p-1.5 sm:p-2 md:p-3 text-center border border-danger/20">
-          <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-danger mx-auto mb-0.5 sm:mb-1" />
-          <p className="text-xs mobile-text-xs text-danger font-medium">Gastos</p>
-          <p className="text-xs mobile-text-xs sm:text-sm font-bold text-danger truncate">
-            {displayCurrency(totalExpenses)}
+        <div className={`bg-red-50 dark:bg-red-950 rounded-lg text-center border border-red-200 dark:border-red-800 min-w-0 ${isMobile ? 'p-1.5' : 'p-3'}`}>
+          <TrendingDown className={`text-red-600 dark:text-red-400 mx-auto ${isMobile ? 'w-3 h-3 mb-1' : 'w-4 h-4 mb-1'}`} />
+          <p className={`text-red-600 dark:text-red-400 font-medium leading-tight ${isMobile ? 'text-[9px]' : 'text-xs'}`}>Gastos</p>
+          <p className={`font-bold leading-tight truncate ${isMobile ? 'text-[9px] px-0' : 'text-xs px-0.5'} text-red-700 dark:text-red-300`} title={displayCurrency(totalExpenses)}>
+            {isMobile ? displayCompactCurrency(totalExpenses) : displayCurrency(totalExpenses)}
           </p>
         </div>
         
-        <div className={`rounded-md sm:rounded-lg p-1.5 sm:p-2 md:p-3 text-center border ${
+        <div className={`rounded-lg text-center border min-w-0 ${isMobile ? 'p-1.5' : 'p-3'} ${
           isProfit 
-            ? 'bg-info-light border-info/20' 
-            : 'bg-warning-light border-warning/20'
+            ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800' 
+            : 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800'
         }`}>
-          <AlertCircle className={`w-3 h-3 sm:w-4 sm:h-4 mx-auto mb-0.5 sm:mb-1 ${
-            isProfit ? 'text-info' : 'text-warning'
+          <AlertCircle className={`mx-auto ${isMobile ? 'w-3 h-3 mb-1' : 'w-4 h-4 mb-1'} ${
+            isProfit 
+              ? 'text-emerald-600 dark:text-emerald-400' 
+              : 'text-orange-600 dark:text-orange-400'
           }`} />
-          <p className={`text-xs mobile-text-xs font-medium ${
-            isProfit ? 'text-info' : 'text-warning'
+          <p className={`font-medium leading-tight ${isMobile ? 'text-[9px]' : 'text-xs'} ${
+            isProfit 
+              ? 'text-emerald-600 dark:text-emerald-400' 
+              : 'text-orange-600 dark:text-orange-400'
           }`}>
             {isProfit ? 'Lucro' : 'Prejuízo'}
           </p>
-          <p className={`text-xs mobile-text-xs sm:text-sm font-bold truncate ${
-            isProfit ? 'text-info' : 'text-warning'
-          }`}>
-            {displayCurrency(Math.abs(netProfit))}
+          <p className={`font-bold leading-tight truncate ${isMobile ? 'text-[9px] px-0' : 'text-xs px-0.5'} ${
+            isProfit 
+              ? 'text-emerald-700 dark:text-emerald-300' 
+              : 'text-orange-700 dark:text-orange-300'
+          }`} title={displayCurrency(Math.abs(netProfit))}>
+            {isMobile ? displayCompactCurrency(Math.abs(netProfit)) : displayCurrency(Math.abs(netProfit))}
           </p>
         </div>
       </div>
       
       {/* Next Expense */}
-      <div className="border-t border-border pt-3 sm:pt-4">
+      <div className={`border-t border-gray-200 dark:border-gray-800 ${isMobile ? 'pt-2' : 'pt-4'}`}>
         <NextExpenseSummary
           nextExpense={nextExpense}
           carId={id}

@@ -31,11 +31,11 @@ export function DeleteExpenseDialog({ expenseId, expenseDescription }: DeleteExp
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Trash2 className="w-4 h-4" />
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+          <Trash2 className="w-3 h-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Excluir Despesa</DialogTitle>
           <DialogDescription>

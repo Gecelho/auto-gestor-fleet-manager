@@ -43,9 +43,8 @@ export function DeleteCarDialog({ carId, carName, onDelete }: DeleteCarDialogPro
       setOpen(newOpen);
     }}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
-          <Trash2 className="w-4 h-4 mr-2" />
-          Deletar
+        <Button variant="destructive" size="icon" className="h-8 w-8">
+          <Trash2 className="w-4 h-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

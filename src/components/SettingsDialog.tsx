@@ -32,7 +32,7 @@ export function SettingsDialog() {
           <span className="sr-only">Configurações</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md w-[90vw] sm:w-full">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
@@ -40,105 +40,112 @@ export function SettingsDialog() {
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
-          {/* Tema */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Tema da Aplicação</Label>
-            <Select value={theme} onValueChange={(value) => setTheme(value as 'light' | 'dark')}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione um tema" />
-              </SelectTrigger>
-              <SelectContent>
-                {themeOptions.map((option) => {
-                  const Icon = option.icon;
-                  return (
-                    <SelectItem key={option.value} value={option.value}>
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4" />
-                        <span>{option.label}</span>
-                      </div>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Escolha entre tema claro ou escuro para a aplicação.
-            </p>
-          </div>
-
-          {/* Sons de Interação */}
-          <div className="space-y-4">
-            <Label className="text-sm font-medium">Sons de Interação</Label>
-            
-            {/* Toggle de Sons */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {soundSettings.enabled ? (
-                  <Volume2 className="h-4 w-4 text-primary" />
-                ) : (
-                  <VolumeX className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-sm">Ativar sons</span>
-              </div>
-              <Switch
-                checked={soundSettings.enabled}
-                onCheckedChange={toggleSounds}
-              />
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="space-y-6 py-4">
+            {/* Tema */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Tema da Aplicação</Label>
+              <Select value={theme} onValueChange={(value) => setTheme(value as 'light' | 'dark')}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione um tema" />
+                </SelectTrigger>
+                <SelectContent>
+                  {themeOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          <span>{option.label}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Escolha entre tema claro ou escuro para a aplicação.
+              </p>
             </div>
 
-            {/* Controle de Volume */}
-            {soundSettings.enabled && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground">Volume</Label>
-                  <span className="text-xs text-muted-foreground">
-                    {Math.round(soundSettings.volume * 100)}%
-                  </span>
+            {/* Sons de Interação */}
+            <div className="space-y-4">
+              <Label className="text-sm font-medium">Sons de Interação</Label>
+              
+              {/* Toggle de Sons */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {soundSettings.enabled ? (
+                    <Volume2 className="h-4 w-4 text-primary flex-shrink-0" />
+                  ) : (
+                    <VolumeX className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  )}
+                  <span className="text-sm truncate">Ativar sons</span>
                 </div>
-                <Slider
-                  value={[soundSettings.volume]}
-                  onValueChange={(value) => setVolume(value[0])}
-                  max={1}
-                  min={0}
-                  step={0.1}
-                  className="w-full"
+                <Switch
+                  checked={soundSettings.enabled}
+                  onCheckedChange={toggleSounds}
+                  className="flex-shrink-0"
                 />
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => playSound('click')}
-                    className="text-xs"
-                  >
-                    Testar Click
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => playSound('success')}
-                    className="text-xs"
-                  >
-                    Testar Sucesso
-                  </Button>
-                </div>
               </div>
-            )}
 
-            <p className="text-xs text-muted-foreground">
-              Ative sons suaves de feedback para cliques, sucessos e outras interações. 
-              Os sons são discretos e podem ser ajustados no volume.
-            </p>
+              {/* Controle de Volume */}
+              {soundSettings.enabled && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground">Volume</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {Math.round(soundSettings.volume * 100)}%
+                    </span>
+                  </div>
+                  <Slider
+                    value={[soundSettings.volume]}
+                    onValueChange={(value) => setVolume(value[0])}
+                    max={1}
+                    min={0}
+                    step={0.1}
+                    className="w-full"
+                  />
+                  <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => playSound('click')}
+                      className="text-xs flex-1 sm:flex-none"
+                    >
+                      Testar Click
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => playSound('success')}
+                      className="text-xs flex-1 sm:flex-none"
+                    >
+                      Testar Sucesso
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Ative sons suaves de feedback para cliques, sucessos e outras interações. 
+                Os sons são discretos e podem ser ajustados no volume.
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={() => {
-            clickSound(); // Som ao fechar
-            setOpen(false);
-          }}>
+        <div className="flex justify-center sm:justify-end pt-4 border-t flex-shrink-0">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              clickSound(); // Som ao fechar
+              setOpen(false);
+            }}
+            className="w-full sm:w-auto"
+          >
             Fechar
           </Button>
         </div>

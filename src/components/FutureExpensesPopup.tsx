@@ -9,6 +9,7 @@ import { ChevronDown, Loader2, Edit } from "lucide-react";
 import { useFutureExpenses, useToggleFutureExpenseCompletion, useToggleExpensePayment, useUpdateCarMileage, useCarCurrentMileage } from "@/hooks/useFutureExpenses";
 import { displayCurrency, displayMileage } from "@/lib/formatters";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FutureExpensesPopupProps {
   carId: string;
@@ -34,6 +35,7 @@ export function FutureExpensesPopup({
   const setOpen = externalOnOpenChange || setInternalOpen;
   
   const { clickSound, successSound } = useSoundEffects();
+  const isMobile = useIsMobile();
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [editingMileage, setEditingMileage] = useState(false);
   
@@ -123,11 +125,11 @@ export function FutureExpensesPopup({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-6 w-6">
-          <ChevronDown className="w-4 h-4" />
+        <Button variant="ghost" size="icon" className={isMobile ? "h-3 w-3 p-0 min-w-0" : "h-6 w-6"}>
+          <ChevronDown className={isMobile ? "w-2.5 h-2.5" : "w-4 h-4"} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             Despesas Futuras - {carBrand} {carModel}

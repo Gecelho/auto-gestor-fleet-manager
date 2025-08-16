@@ -21,7 +21,7 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
   const { clickSound, successSound } = useSoundEffects();
   const [formData, setFormData] = useState({
     description: revenue.description,
-    value: formatCurrency((revenue.value * 100).toString()),
+    value: formatCurrency(Math.round(revenue.value * 100).toString()),
     valueNumeric: revenue.value,
     date: revenue.date,
     type: revenue.type,
@@ -32,7 +32,7 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
   const resetForm = () => {
     setFormData({
       description: revenue.description,
-      value: formatCurrency((revenue.value * 100).toString()),
+      value: formatCurrency(Math.round(revenue.value * 100).toString()),
       valueNumeric: revenue.value,
       date: revenue.date,
       type: revenue.type,
@@ -73,11 +73,11 @@ export function EditRevenueDialog({ revenue }: EditRevenueDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Edit className="w-4 h-4" />
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+          <Edit className="w-3 h-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Editar Receita</DialogTitle>
           <DialogDescription>

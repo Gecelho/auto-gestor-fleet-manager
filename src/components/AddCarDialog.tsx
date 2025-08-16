@@ -110,15 +110,15 @@ export function AddCarDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="h-9 w-9 sm:w-auto sm:h-auto p-0 sm:px-4 sm:py-2">
+        <Button className="rounded-xl h-9 px-3 sm:px-4 font-medium text-sm">
           <Plus className="w-4 h-4 sm:mr-2" />
           <span className="hidden sm:inline">Adicionar Carro</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col w-[95vw] sm:w-full">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Adicionar Novo Carro</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0 pb-6 border-b border-border">
+          <DialogTitle className="text-lg font-semibold">Adicionar Novo Carro</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-sm">
             Preencha as informações do carro que deseja adicionar ao sistema.
           </DialogDescription>
         </DialogHeader>

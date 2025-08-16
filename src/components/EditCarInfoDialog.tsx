@@ -122,7 +122,7 @@ export function EditCarInfoDialog({ carId }: EditCarInfoDialogProps) {
           <Edit className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Editar Informações do Carro</DialogTitle>
         </DialogHeader>

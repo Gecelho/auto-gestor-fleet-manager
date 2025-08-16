@@ -76,7 +76,7 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
           {driver ? "Motorista" : "Motorista"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{driver ? "Editar Motorista" : "Adicionar Motorista"}</DialogTitle>
           <DialogDescription>
