@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useAppState } from '@/hooks/useAppState';
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +31,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const { saveAppState, clearAppState, wasRecentlyAuthenticated } = useAppState();
 
   // Function to fetch or create user profile - optimized for speed
   const fetchUserProfile = async (userId: string) => {
@@ -127,6 +129,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Get initial session with aggressive timeout for better UX
     const getInitialSession = async () => {
       try {
+        // Check if user was recently authenticated to avoid showing login screen
+        if (wasRecentlyAuthenticated()) {
+          // User was recently authenticated, give more time for session recovery
+          console.log('User was recently authenticated, extending timeout');
+        }
+
         // Check localStorage first for faster initial load
         const cachedSession = localStorage.getItem('supabase.auth.token');
         if (cachedSession) {
@@ -186,12 +194,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(session?.user ?? null);
         
         if (session?.user?.id) {
+          // Save app state when user is authenticated
+          saveAppState(window.location.pathname, true);
+          
           // Fetch user profile in background without blocking
           fetchUserProfile(session.user.id).catch(error => {
             console.warn('Profile fetch failed on auth change, continuing without profile:', error);
           });
         } else {
+          // Clear app state when signing out
+          clearAppState();
           setUserProfile(null);
+          
           // Clear profile cache when signing out
           const keys = Object.keys(sessionStorage);
           keys.forEach(key => {

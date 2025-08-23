@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAppState } from "@/hooks/useAppState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { AuthFallback } from "@/components/AuthFallback";
+import { AuthLoadingOverlay } from "@/components/AuthLoadingOverlay";
 import { Car, Shield, Chrome } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -12,33 +14,47 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading, signInWithGoogle } = useAuth();
+  const { wasRecentlyAuthenticated } = useAppState();
   const [showFallback, setShowFallback] = useState(false);
+  const [showLoginScreen, setShowLoginScreen] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  // ProtectedRoute check - log removido para produção
+  useEffect(() => {
+    if (!loading) {
+      setInitialLoad(false);
+      
+      // Se não há usuário após o carregamento
+      if (!user) {
+        // Se o usuário estava autenticado recentemente, aguarda mais tempo
+        const delay = wasRecentlyAuthenticated() ? 1500 : 500;
+        
+        const timer = setTimeout(() => {
+          setShowLoginScreen(true);
+        }, delay);
+        
+        return () => clearTimeout(timer);
+      } else {
+        setShowLoginScreen(false);
+      }
+    }
+  }, [loading, user, wasRecentlyAuthenticated]);
 
   if (showFallback) {
     return <AuthFallback onRetry={() => setShowFallback(false)} />;
   }
 
-  if (loading) {
+  // Durante o carregamento inicial, mostra apenas o spinner sem a tela de login
+  if (loading || (initialLoad && !user)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <LoadingSpinner 
-          size="lg" 
-          text="Verificando autenticação..." 
-          timeout={1000}
-          showText={false}
-          fullScreen={true}
-          onTimeout={() => {
-            console.warn('Auth loading timeout, showing fallback');
-            setShowFallback(true);
-          }}
-        />
-      </div>
+      <AuthLoadingOverlay 
+        message="Verificando autenticação..." 
+        showBackground={false}
+      />
     );
   }
 
-  if (!user) {
+  // Se não há usuário e já passou do carregamento inicial, mostra tela de login
+  if (!user && showLoginScreen) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
         <Card className="w-full max-w-md">
@@ -87,6 +103,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
           </CardContent>
         </Card>
       </div>
+    );
+  }
+
+  // Se não há usuário mas ainda não deve mostrar login, continua com spinner
+  if (!user) {
+    return (
+      <AuthLoadingOverlay 
+        message={wasRecentlyAuthenticated() ? "Restaurando sessão..." : "Verificando autenticação..."} 
+        showBackground={false}
+      />
     );
   }
 
