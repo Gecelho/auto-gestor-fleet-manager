@@ -19,4 +19,19 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+        },
+      },
+    },
+    // Ensure proper handling of dynamic imports
+    target: 'esnext',
+    minify: 'esbuild',
+  },
+  // Ensure proper base path for deployment
+  base: '/',
 }));

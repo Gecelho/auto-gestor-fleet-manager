@@ -49,6 +49,19 @@ export default function CarDetail() {
   const { uploadImage, uploading } = useImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Validate ID parameter
+  if (!id || !id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">ID do carro inválido</h2>
+          <p className="text-muted-foreground mb-4">O identificador do carro não é válido.</p>
+          <Button onClick={() => navigate("/")}>Voltar para lista</Button>
+        </div>
+      </div>
+    );
+  }
+
   // State for active tab with persistence
   const [activeTab, setActiveTab] = useState(() => {
     // First check URL params, then localStorage, then default
