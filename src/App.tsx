@@ -20,20 +20,28 @@ const queryClient = new QueryClient({
         if (error?.message?.includes('auth') || error?.message?.includes('unauthorized')) {
           return false;
         }
-        return failureCount < 3;
+        return failureCount < 2; // Reduced retries for faster failures
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 0, // Always consider data stale for fresh fetches
-      gcTime: 2 * 60 * 1000, // Keep in cache for 2 minutes
-      refetchOnWindowFocus: true, // Refetch when window gains focus
+      retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 5000), // Faster retry delays
+      staleTime: 30 * 1000, // 30 seconds - balance between freshness and performance
+      gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+      refetchOnWindowFocus: true,
       refetchOnReconnect: true,
-      refetchOnMount: true, // Always refetch on mount
-      networkMode: 'offlineFirst',
+      refetchOnMount: 'always', // Always refetch on mount for fresh data
+      networkMode: 'online', // Changed from offlineFirst for better performance
+      // Add timeout for queries
+      meta: {
+        timeout: 10000, // 10 second timeout for queries
+      },
     },
     mutations: {
-      retry: 2,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-      networkMode: 'offlineFirst',
+      retry: 1, // Reduced retries for mutations
+      retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 3000), // Faster retry delays
+      networkMode: 'online',
+      // Add timeout for mutations
+      meta: {
+        timeout: 15000, // 15 second timeout for mutations
+      },
     },
   },
 });

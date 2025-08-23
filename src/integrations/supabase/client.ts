@@ -14,11 +14,23 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: 'pkce',
+    // Optimize auth for faster loading
+    storageKey: 'supabase.auth.token',
+    debug: false
   },
   global: {
     headers: {
-      'x-client-info': 'autogestor-web'
+      'x-client-info': 'autogestor-web',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
+    },
+    // Add timeout for faster failures
+    fetch: (url, options = {}) => {
+      return fetch(url, {
+        ...options,
+        signal: AbortSignal.timeout(8000), // 8 second timeout
+      });
     }
   },
   db: {

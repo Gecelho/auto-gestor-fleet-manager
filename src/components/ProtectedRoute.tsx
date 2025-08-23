@@ -26,7 +26,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         <LoadingSpinner 
           size="lg" 
           text="Verificando autenticação..." 
-          timeout={2000}
+          timeout={1000}
+          showText={false}
+          fullScreen={true}
           onTimeout={() => {
             console.warn('Auth loading timeout, showing fallback');
             setShowFallback(true);

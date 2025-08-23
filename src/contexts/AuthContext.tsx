@@ -31,18 +31,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Function to fetch or create user profile
+  // Function to fetch or create user profile - optimized for speed
   const fetchUserProfile = async (userId: string) => {
     try {
-      // First try to get existing profile
-      const { data: existingProfile, error: fetchError } = await supabase
+      // Check cache first
+      const cacheKey = `user_profile_${userId}`;
+      const cachedProfile = sessionStorage.getItem(cacheKey);
+      if (cachedProfile) {
+        try {
+          const parsed = JSON.parse(cachedProfile);
+          if (parsed.cached_at && Date.now() - parsed.cached_at < 5 * 60 * 1000) { // 5 minutes cache
+            setUserProfile(parsed.data);
+            return;
+          }
+        } catch (e) {
+          // Invalid cache, continue
+        }
+      }
+
+      // Set a timeout for profile fetch to avoid blocking
+      const profilePromise = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single();
 
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 500) // Very short timeout
+      );
+
+      const { data: existingProfile, error: fetchError } = await Promise.race([
+        profilePromise, 
+        timeoutPromise
+      ]) as any;
+
       if (existingProfile) {
         setUserProfile(existingProfile);
+        // Cache the profile
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          data: existingProfile,
+          cached_at: Date.now()
+        }));
         return;
       }
 
@@ -51,33 +80,71 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw fetchError;
       }
 
-      // Profile doesn't exist, the trigger should have created it
-      // Let's wait a moment and try again
+      // Profile doesn't exist, create a minimal profile to avoid blocking
+      const minimalProfile = {
+        id: userId,
+        subscription_status: 'trial',
+        subscription_plan: 'basic',
+        subscription_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+      setUserProfile(minimalProfile);
+
+      // Try to fetch real profile in background
       setTimeout(async () => {
-        const { data: newProfile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .single();
-        
-        if (newProfile) {
-          setUserProfile(newProfile);
+        try {
+          const { data: newProfile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+          
+          if (newProfile) {
+            setUserProfile(newProfile);
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+              data: newProfile,
+              cached_at: Date.now()
+            }));
+          }
+        } catch (e) {
+          console.warn('Background profile fetch failed:', e);
         }
-      }, 1000);
+      }, 100);
 
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.warn('Error fetching user profile:', error);
+      // Set minimal profile to avoid blocking the app
+      const minimalProfile = {
+        id: userId,
+        subscription_status: 'trial',
+        subscription_plan: 'basic',
+        subscription_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+      setUserProfile(minimalProfile);
     }
   };
 
   useEffect(() => {
-    // Get initial session with timeout
+    // Get initial session with aggressive timeout for better UX
     const getInitialSession = async () => {
       try {
-        // Set a timeout for the initial session check
+        // Check localStorage first for faster initial load
+        const cachedSession = localStorage.getItem('supabase.auth.token');
+        if (cachedSession) {
+          try {
+            const parsed = JSON.parse(cachedSession);
+            if (parsed?.access_token && parsed?.expires_at && parsed.expires_at > Date.now() / 1000) {
+              // Token is still valid, proceed with optimistic loading
+              setLoading(false);
+            }
+          } catch (e) {
+            // Invalid cached data, continue with normal flow
+          }
+        }
+
+        // Set a very short timeout for the initial session check
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session timeout')), 2000)
+          setTimeout(() => reject(new Error('Session timeout')), 800) // Reduced from 2000ms to 800ms
         );
         
         const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
@@ -85,17 +152,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(session?.user ?? null);
         
         if (session?.user?.id) {
-          // Try to fetch user profile with timeout
-          try {
-            const profilePromise = fetchUserProfile(session.user.id);
-            const profileTimeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Profile timeout')), 1500)
-            );
-            await Promise.race([profilePromise, profileTimeoutPromise]);
-          } catch (profileError) {
-            console.warn('Profile fetch failed, continuing without profile:', profileError);
-            // Continue without profile - user can still use the app
-          }
+          // Fetch user profile in background without blocking UI
+          fetchUserProfile(session.user.id).catch(error => {
+            console.warn('Profile fetch failed, continuing without profile:', error);
+          });
         }
         
       } catch (error) {
@@ -109,11 +169,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Set a maximum timeout for the entire auth initialization
+    // Set a maximum timeout for the entire auth initialization - much shorter
     const maxTimeout = setTimeout(() => {
       console.warn('Auth initialization timeout - forcing completion');
       setLoading(false);
-    }, 2000);
+    }, 1000); // Reduced from 2000ms to 1000ms
 
     getInitialSession().finally(() => {
       clearTimeout(maxTimeout);
@@ -122,29 +182,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // Auth state changed - log removido para produção
-        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user?.id) {
-          // Try to fetch user profile with timeout for auth changes too
-          try {
-            const profilePromise = fetchUserProfile(session.user.id);
-            const profileTimeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Profile timeout on auth change')), 1500)
-            );
-            await Promise.race([profilePromise, profileTimeoutPromise]);
-          } catch (profileError) {
-            console.warn('Profile fetch failed on auth change, continuing without profile:', profileError);
-            // Continue without profile - user can still use the app
-          }
+          // Fetch user profile in background without blocking
+          fetchUserProfile(session.user.id).catch(error => {
+            console.warn('Profile fetch failed on auth change, continuing without profile:', error);
+          });
         } else {
           setUserProfile(null);
+          // Clear profile cache when signing out
+          const keys = Object.keys(sessionStorage);
+          keys.forEach(key => {
+            if (key.startsWith('user_profile_')) {
+              sessionStorage.removeItem(key);
+            }
+          });
         }
         
         setLoading(false);
-        // State updated - log removido para produção
       }
     );
 
