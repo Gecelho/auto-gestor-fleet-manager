@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown, Loader2, Edit } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useFutureExpenses, useToggleFutureExpenseCompletion, useToggleExpensePayment, useUpdateCarMileage, useCarCurrentMileage } from "@/hooks/useFutureExpenses";
 import { displayCurrency, displayMileage } from "@/lib/formatters";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
@@ -202,9 +203,7 @@ export function FutureExpensesPopup({
           {/* Lista de despesas futuras */}
           <div className="space-y-3">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin" />
-              </div>
+              <LoadingSpinner size="md" />
             ) : futureExpenses?.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
                 Nenhuma despesa futura encontrada

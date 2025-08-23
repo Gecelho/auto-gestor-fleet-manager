@@ -2,13 +2,16 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SecureInput } from "@/components/ui/secure-input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Plus, Loader2 } from "lucide-react";
 import { useAddRevenue } from "@/hooks/useRevenues";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useSecureForm } from "@/hooks/useSecureForm";
+import { SecurityLogger } from "@/lib/security";
 
 interface AddRevenueDialogProps {
   carId: string;
@@ -27,6 +30,21 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
 
   const addRevenueMutation = useAddRevenue();
 
+  // Configuração de segurança para o formulário
+  const fieldRules = {
+    description: { min: 2, max: 200, type: 'text' as const, required: true },
+    date: { required: true },
+    type: { required: true },
+    value: { min: 1, required: true }
+  };
+
+  const { secureSubmit, securityStatus } = useSecureForm(formData, {
+    enableCSRF: true,
+    enableSanitization: true,
+    enableRateLimit: true,
+    strictMode: true
+  });
+
   const resetForm = () => {
     setFormData({
       description: "",
@@ -37,25 +55,39 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = secureSubmit(async (sanitizedData) => {
     try {
+      SecurityLogger.log('info', 'revenue_creation_initiated', {
+        carId,
+        description: sanitizedData.description?.substring(0, 50) + '...',
+        type: sanitizedData.type
+      });
+
       await addRevenueMutation.mutateAsync({
         car_id: carId,
-        description: formData.description,
+        description: sanitizedData.description,
         value: formData.valueNumeric,
-        date: formData.date,
-        type: formData.type,
+        date: sanitizedData.date,
+        type: sanitizedData.type,
+      });
+
+      SecurityLogger.log('info', 'revenue_created_successfully', {
+        carId,
+        value: formData.valueNumeric,
+        type: sanitizedData.type
       });
 
       successSound(); // Som de sucesso ao adicionar receita
       resetForm();
       setOpen(false);
     } catch (error) {
+      SecurityLogger.log('error', 'revenue_creation_failed', {
+        carId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
       console.error("Error adding revenue:", error);
     }
-  };
+  }, fieldRules);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
@@ -88,8 +120,12 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="description">Descrição *</Label>
-            <Input
+            <SecureInput
               id="description"
+              fieldType="text"
+              maxLength={200}
+              strictMode={true}
+              rateLimitKey="revenue_description_input"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Ex: Aluguel mensal"

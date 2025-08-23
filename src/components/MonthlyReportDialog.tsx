@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Loader2, Calendar, TrendingUp } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useMonthlyReport, usePeriodReport } from "@/hooks/useMonthlyReport";
 import { displayCurrency, displayMileage } from "@/lib/formatters";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
@@ -100,10 +101,7 @@ export function MonthlyReportDialog({ carId, carName }: MonthlyReportDialogProps
             </div>
 
             {monthlyLoading && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                <span>Gerando relatório...</span>
-              </div>
+              <LoadingSpinner size="md" text="Gerando relatório..." />
             )}
 
             {monthlyData && (
@@ -211,10 +209,7 @@ export function MonthlyReportDialog({ carId, carName }: MonthlyReportDialogProps
             </div>
 
             {periodLoading && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                <span>Gerando relatório...</span>
-              </div>
+              <LoadingSpinner size="md" text="Gerando relatório..." />
             )}
 
             {periodData && (

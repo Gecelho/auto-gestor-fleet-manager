@@ -172,18 +172,32 @@ export function useCarCurrentMileage(carId: string) {
   return useQuery({
     queryKey: ["car-current-mileage", carId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Primeiro tenta buscar da tabela car_current_mileage (se existir)
+      const { data: currentMileageData, error: currentMileageError } = await supabase
         .from("car_current_mileage")
         .select("current_mileage")
         .eq("car_id", carId)
-        .single();
+        .maybeSingle(); // Use maybeSingle() em vez de single() para não dar erro se não encontrar
 
-      if (error) {
-        console.error("Error fetching car current mileage:", error);
-        throw error;
+      // Se encontrou dados na tabela car_current_mileage, use eles
+      if (currentMileageData && !currentMileageError) {
+        return currentMileageData.current_mileage || 0;
       }
 
-      return data?.current_mileage || 0;
+      // Caso contrário, busca da tabela cars como fallback
+      const { data: carData, error: carError } = await supabase
+        .from("cars")
+        .select("mileage")
+        .eq("id", carId)
+        .single();
+
+      if (carError) {
+        console.error("Error fetching car mileage:", carError);
+        throw carError;
+      }
+
+      return carData?.mileage || 0;
     },
+    enabled: !!carId, // Só executa se carId existir
   });
 }

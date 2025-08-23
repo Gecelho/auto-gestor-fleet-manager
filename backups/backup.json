@@ -1,0 +1,373 @@
+{
+  "timestamp": "2025-08-23T01:56:47.645Z",
+  "tables": {
+    "cars": {
+      "count": 2,
+      "data": [
+        {
+          "id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "name": "Fiat Uno",
+          "plate": "QXV4D03",
+          "image_url": "https://sgkipojbdrvnrqfddeab.supabase.co/storage/v1/object/public/car-images/hebyye4clyt-1752686223970.jpg",
+          "purchase_value": 45000,
+          "payment_method": "Financiado",
+          "purchase_date": "2023-07-11",
+          "mileage": 45000,
+          "notes": "Parcelas 1.208,00",
+          "status": "alugado",
+          "created_at": "2025-07-16T17:17:10.539891+00:00",
+          "updated_at": "2025-07-16T17:44:42.099804+00:00"
+        },
+        {
+          "id": "198225e9-1d40-4560-a3cd-963442c180bb",
+          "name": "KWID",
+          "plate": "QXT9B05",
+          "image_url": "https://sgkipojbdrvnrqfddeab.supabase.co/storage/v1/object/public/car-images/eclhvt34gnu-1752772043052.jpg",
+          "purchase_value": 34275,
+          "payment_method": "À vista",
+          "purchase_date": "2025-06-02",
+          "mileage": 75000,
+          "notes": "",
+          "status": "alugado",
+          "created_at": "2025-07-17T17:07:29.842095+00:00",
+          "updated_at": "2025-08-02T16:34:14.451508+00:00"
+        }
+      ]
+    },
+    "expenses": {
+      "count": 7,
+      "data": [
+        {
+          "id": "57598ece-1289-4307-9cdb-de15829a3246",
+          "car_id": "198225e9-1d40-4560-a3cd-963442c180bb",
+          "description": "Guincho",
+          "value": 900,
+          "date": "2025-06-02",
+          "created_at": "2025-07-18T18:31:12.808298+00:00",
+          "observation": null,
+          "mileage": null,
+          "next_mileage": null,
+          "paid": false
+        },
+        {
+          "id": "e276c4da-f099-4284-a8d1-0e20884300bd",
+          "car_id": "198225e9-1d40-4560-a3cd-963442c180bb",
+          "description": "Mecanica Motor",
+          "value": 3200,
+          "date": "2025-07-21",
+          "created_at": "2025-07-19T00:11:53.405533+00:00",
+          "observation": null,
+          "mileage": null,
+          "next_mileage": null,
+          "paid": false
+        },
+        {
+          "id": "7ddc1ffb-4d0c-4ec3-b026-84ec0b594a92",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Troca de 2 Pneus ",
+          "value": 478,
+          "date": "2025-07-29",
+          "created_at": "2025-08-02T20:58:27.466947+00:00",
+          "observation": "Troca de dois pneus na (Bosta Arca Pneus) valor de R$ 478,00 ",
+          "mileage": 164745,
+          "next_mileage": null,
+          "paid": false
+        },
+        {
+          "id": "13027dea-9e51-4adb-bf25-17aaa5e0a687",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Troca de oleo",
+          "value": 221.8,
+          "date": "2025-07-24",
+          "created_at": "2025-08-04T23:03:26.623115+00:00",
+          "observation": "Troca de oleo e filtro de oleo.",
+          "mileage": 163536,
+          "next_mileage": 173536,
+          "paid": false
+        },
+        {
+          "id": "4d8fd523-277c-41cb-a267-2313f604a41d",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Seguro",
+          "value": 275,
+          "date": "2025-08-11",
+          "created_at": "2025-08-09T17:27:48.959726+00:00",
+          "observation": "Seguro APVS",
+          "mileage": null,
+          "next_mileage": null,
+          "paid": false
+        },
+        {
+          "id": "37e10f59-bc93-4cf2-aefd-5f8d5442e30d",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Manutenção ",
+          "value": 2312.3,
+          "date": "2025-08-04",
+          "created_at": "2025-08-09T17:25:15.393538+00:00",
+          "observation": "Foi feita a troca de varios itens do carro como freio completo dinteira e traseiro, disco, sapata, tambor lona e outros iteis como agua da bateria, BOMBA DAGUA , coifa entre ouros.",
+          "mileage": 166302,
+          "next_mileage": null,
+          "paid": false
+        },
+        {
+          "id": "394319ca-582c-4a13-a2cd-b1d710c5d66f",
+          "car_id": "198225e9-1d40-4560-a3cd-963442c180bb",
+          "description": "Manutenção ",
+          "value": 760,
+          "date": "2025-08-11",
+          "created_at": "2025-08-14T23:26:39.789497+00:00",
+          "observation": "Troca dos 4 pneus, coloquei pneus remoldi , R$ 180,00 cada um e os 4 bicos também R$ 10,00 reais cada um.",
+          "mileage": 75150,
+          "next_mileage": 85150,
+          "paid": false
+        }
+      ]
+    },
+    "revenues": {
+      "count": 25,
+      "data": [
+        {
+          "id": "ec8b57bf-2a13-4302-bcf0-665fe96847d9",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguél",
+          "value": 500,
+          "date": "2025-05-13",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:24:15.910625+00:00"
+        },
+        {
+          "id": "ff21d0a7-efd5-4a15-8d57-f2da3b42064d",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 650,
+          "date": "2025-05-21",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:32:53.41537+00:00"
+        },
+        {
+          "id": "5b76bf5b-b6f5-4a20-9103-e5af21098224",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 100,
+          "date": "2025-05-24",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:33:43.514089+00:00"
+        },
+        {
+          "id": "575edb62-da48-438d-82fc-0b6536441191",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 400,
+          "date": "2025-05-27",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:34:24.686513+00:00"
+        },
+        {
+          "id": "3f4def08-bfd4-4834-bd60-381255b0a9b1",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 150,
+          "date": "2025-05-28",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:35:00.016382+00:00"
+        },
+        {
+          "id": "d6a3333e-5584-4fcb-bb2d-5e8aa13d44c3",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 150,
+          "date": "2025-06-01",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:35:38.300795+00:00"
+        },
+        {
+          "id": "dff93611-1ef4-40cb-94bf-ee2d6880ca82",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 200,
+          "date": "2025-06-08",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:36:25.518781+00:00"
+        },
+        {
+          "id": "5c62bba3-a55c-4231-8e3a-9a091d6988e1",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 500,
+          "date": "2025-06-10",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:36:57.799997+00:00"
+        },
+        {
+          "id": "0034d5df-5df8-4311-8d9e-df09c632c2c0",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 400,
+          "date": "2025-06-15",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:37:51.690224+00:00"
+        },
+        {
+          "id": "13e058df-3c49-4c1a-b903-c566d02b9cca",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 800,
+          "date": "2025-06-17",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:38:29.870045+00:00"
+        },
+        {
+          "id": "d640a8ba-8ef0-4967-a004-e2aa215b7ef5",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 500,
+          "date": "2025-06-24",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:39:16.342062+00:00"
+        },
+        {
+          "id": "9404f2ba-0d94-4b8f-812f-40c6b55d9cfd",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 550,
+          "date": "2025-07-01",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:40:36.229848+00:00"
+        },
+        {
+          "id": "80cf1a61-3f4e-4f41-a3c0-a615245396d9",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 750,
+          "date": "2025-07-08",
+          "type": "aluguel",
+          "created_at": "2025-07-16T17:41:23.501096+00:00"
+        },
+        {
+          "id": "fdf7bf7f-be97-41b0-a1ec-1ef71a6afab3",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 600,
+          "date": "2025-07-19",
+          "type": "aluguel",
+          "created_at": "2025-07-21T14:08:10.178028+00:00"
+        },
+        {
+          "id": "5c3d0c50-42c6-4b62-964b-fa17364e21db",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 500,
+          "date": "2025-07-22",
+          "type": "aluguel",
+          "created_at": "2025-08-02T20:46:14.13661+00:00"
+        },
+        {
+          "id": "fb710d95-b1fc-42de-8a15-7c9cf2700189",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 478,
+          "date": "2025-07-28",
+          "type": "aluguel",
+          "created_at": "2025-08-02T21:02:57.676733+00:00"
+        },
+        {
+          "id": "9f5568ff-dda0-4ef5-b6fe-cd21df565547",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 300,
+          "date": "2025-08-02",
+          "type": "aluguel",
+          "created_at": "2025-08-04T15:45:44.043485+00:00"
+        },
+        {
+          "id": "b48a1a73-e9ae-4428-85e7-e1849da0e2bf",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 150,
+          "date": "2025-08-03",
+          "type": "aluguel",
+          "created_at": "2025-08-04T15:46:56.326196+00:00"
+        },
+        {
+          "id": "a333514b-2344-4bf2-afc4-dc50e8798a17",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 400,
+          "date": "2025-08-05",
+          "type": "aluguel",
+          "created_at": "2025-08-07T18:29:18.974306+00:00"
+        },
+        {
+          "id": "02d29305-aa8b-4a78-91fd-7197f0b370f0",
+          "car_id": "198225e9-1d40-4560-a3cd-963442c180bb",
+          "description": "Caução de Locação",
+          "value": 1500,
+          "date": "2025-08-13",
+          "type": "aluguel",
+          "created_at": "2025-08-14T23:13:10.067943+00:00"
+        },
+        {
+          "id": "28af5456-5f5e-4df1-921a-cee157b7b200",
+          "car_id": "198225e9-1d40-4560-a3cd-963442c180bb",
+          "description": "Aluguel",
+          "value": 700,
+          "date": "2025-08-13",
+          "type": "aluguel",
+          "created_at": "2025-08-14T23:14:00.07586+00:00"
+        },
+        {
+          "id": "598a3572-552b-49d5-a6e8-b1f43e4326c4",
+          "car_id": "198225e9-1d40-4560-a3cd-963442c180bb",
+          "description": "Aluguel",
+          "value": 600,
+          "date": "2025-08-19",
+          "type": "aluguel",
+          "created_at": "2025-08-19T11:36:25.343131+00:00"
+        },
+        {
+          "id": "a4b50bf1-ab80-40b4-8c9c-329857861b08",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel ",
+          "value": 500,
+          "date": "2025-08-19",
+          "type": "aluguel",
+          "created_at": "2025-08-21T14:58:30.241513+00:00"
+        },
+        {
+          "id": "2e719bbf-3567-4409-9d8e-8d670938d052",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 380,
+          "date": "2025-08-21",
+          "type": "aluguel",
+          "created_at": "2025-08-22T02:19:22.986431+00:00"
+        },
+        {
+          "id": "b604fe4a-33ee-4a44-940a-a32ad97062b9",
+          "car_id": "ac45649e-bca1-4743-95aa-91ed6bcb6b36",
+          "description": "Aluguel",
+          "value": 120,
+          "date": "2025-08-22",
+          "type": "aluguel",
+          "created_at": "2025-08-23T01:45:19.366052+00:00"
+        }
+      ]
+    },
+    "drivers": {
+      "count": 0,
+      "data": []
+    },
+    "car_mileage_configs": {
+      "error": "relation \"public.car_mileage_configs\" does not exist",
+      "data": []
+    },
+    "weekly_mileage_controls": {
+      "error": "relation \"public.weekly_mileage_controls\" does not exist",
+      "data": []
+    },
+    "mileage_balances": {
+      "error": "relation \"public.mileage_balances\" does not exist",
+      "data": []
+    }
+  }
+}

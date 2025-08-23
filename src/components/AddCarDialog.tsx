@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -20,10 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SecureInput } from "@/components/ui/secure-input";
+import { useSecureForm } from "@/hooks/useSecureForm";
 import { useAddCar } from "@/hooks/useCars";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
-import { Plus } from "lucide-react";
+import { Plus, Camera, Upload, Shield } from "lucide-react";
+import { toast } from "sonner";
 
 interface AddCarForm {
   name: string;
@@ -44,10 +44,38 @@ export function AddCarDialog() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  const { register, handleSubmit, setValue, watch, reset } = useForm<AddCarForm>({
+  // Usar formulário seguro com configurações específicas
+  const { 
+    register, 
+    handleSubmit, 
+    setValue, 
+    watch, 
+    reset, 
+    secureSubmit,
+    securityStatus,
+    resetSecurity
+  } = useSecureForm<AddCarForm>({
     defaultValues: {
       status: "andamento",
     },
+  }, {
+    enableCSRF: true,
+    enableSanitization: true,
+    enableValidation: true,
+    enableRateLimit: true,
+    rateLimitKey: 'add_car_form',
+    maxSubmissions: 5,
+    windowMs: 300000, // 5 minutos
+    strictMode: true,
+    onSecurityViolation: (violations) => {
+      toast.error(`Violação de segurança detectada: ${violations.join(', ')}`);
+    },
+    onSanitization: (fields) => {
+      toast.warning(`Campos sanitizados: ${fields.join(', ')}`);
+    },
+    onRateLimitExceeded: () => {
+      toast.error('Muitas tentativas de adicionar carros. Aguarde alguns minutos.');
+    }
   });
 
   const status = watch("status");
@@ -64,7 +92,51 @@ export function AddCarDialog() {
     }
   };
 
-  const onSubmit = async (data: AddCarForm) => {
+  // Definir regras de validação para cada campo
+  const fieldRules = {
+    name: {
+      maxLength: 100,
+      minLength: 2,
+      fieldType: 'text' as const,
+      required: true,
+      strictMode: true
+    },
+    plate: {
+      maxLength: 10,
+      minLength: 7,
+      fieldType: 'alphanumeric' as const,
+      required: true,
+      strictMode: true
+    },
+    purchase_value: {
+      maxLength: 15,
+      fieldType: 'numeric' as const,
+      required: true,
+      strictMode: true
+    },
+    payment_method: {
+      maxLength: 50,
+      fieldType: 'text' as const,
+      required: false
+    },
+    purchase_date: {
+      maxLength: 10,
+      fieldType: 'text' as const,
+      required: false
+    },
+    mileage: {
+      maxLength: 10,
+      fieldType: 'numeric' as const,
+      required: false
+    },
+    notes: {
+      maxLength: 1000,
+      fieldType: 'description' as const,
+      required: false
+    }
+  };
+
+  const onSubmit = secureSubmit(async (data: AddCarForm) => {
     try {
       let imageUrl = null;
 
@@ -88,12 +160,16 @@ export function AddCarDialog() {
       successSound(); // Som de sucesso ao adicionar carro
       setOpen(false);
       reset();
+      resetSecurity();
       setSelectedImage(null);
       setImagePreview("");
+      
+      toast.success('Carro adicionado com sucesso!');
     } catch (error) {
       console.error("Error adding car:", error);
+      toast.error('Erro ao adicionar carro. Tente novamente.');
     }
-  };
+  }, fieldRules);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
@@ -102,6 +178,7 @@ export function AddCarDialog() {
     setOpen(newOpen);
     if (!newOpen) {
       reset();
+      resetSecurity();
       setSelectedImage(null);
       setImagePreview("");
     }
@@ -117,43 +194,94 @@ export function AddCarDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0 pb-6 border-b border-border">
-          <DialogTitle className="text-lg font-semibold">Adicionar Novo Carro</DialogTitle>
+          <div className="flex items-center gap-2">
+            <DialogTitle className="text-lg font-semibold">Adicionar Novo Carro</DialogTitle>
+
+          </div>
           <DialogDescription className="text-muted-foreground text-sm">
             Preencha as informações do carro que deseja adicionar ao sistema.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto pr-2">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label>Foto do Carro</Label>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full sm:w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Camera className="w-8 h-8 text-gray-400" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <Label
+                    htmlFor="image-upload"
+                    className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Escolher Foto
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Formatos aceitos: JPG, PNG, WebP
+                  </p>
+                </div>
+              </div>
+            </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome do Carro</Label>
-              <Input
+              <Label htmlFor="name">Nome do Carro *</Label>
+              <SecureInput
                 id="name"
                 {...register("name", { required: true })}
                 placeholder="Ex: Honda Civic 2020"
+                fieldType="text"
+                maxLength={100}
+                strictMode={true}
+                rateLimitKey="car_name_input"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="plate">Placa</Label>
-              <Input
+              <Label htmlFor="plate">Placa *</Label>
+              <SecureInput
                 id="plate"
                 {...register("plate", { required: true })}
                 placeholder="Ex: ABC-1234"
+                fieldType="alphanumeric"
+                maxLength={10}
+                strictMode={true}
+                rateLimitKey="car_plate_input"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="purchase_value">Valor de Compra (R$)</Label>
-              <Input
+              <Label htmlFor="purchase_value">Valor de Compra (R$) *</Label>
+              <SecureInput
                 id="purchase_value"
                 type="number"
                 step="0.01"
                 {...register("purchase_value", { required: true })}
                 placeholder="Ex: 50000"
+                fieldType="numeric"
+                maxLength={15}
+                strictMode={true}
+                rateLimitKey="car_value_input"
               />
             </div>
 
@@ -178,63 +306,57 @@ export function AddCarDialog() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="payment_method">Forma de Pagamento</Label>
-              <Input
+              <SecureInput
                 id="payment_method"
                 {...register("payment_method")}
                 placeholder="Ex: Financiamento, À vista"
+                fieldType="text"
+                maxLength={50}
+                rateLimitKey="payment_method_input"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="purchase_date">Data da Compra</Label>
-              <Input
+              <SecureInput
                 id="purchase_date"
                 type="date"
                 {...register("purchase_date")}
+                fieldType="text"
+                maxLength={10}
+                rateLimitKey="purchase_date_input"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="mileage">Quilometragem</Label>
-            <Input
+            <SecureInput
               id="mileage"
               type="number"
               {...register("mileage")}
               placeholder="Ex: 50000"
+              fieldType="numeric"
+              maxLength={10}
+              rateLimitKey="mileage_input"
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Foto do Carro</Label>
-            <div className="space-y-2">
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-              />
-              {imagePreview && (
-                <div className="w-full h-32 bg-muted rounded-lg overflow-hidden">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-            </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>
-            <Textarea
+            <SecureInput
               id="notes"
               {...register("notes")}
               placeholder="Observações sobre o carro..."
+              variant="textarea"
               rows={3}
+              fieldType="description"
+              maxLength={1000}
+              rateLimitKey="notes_input"
             />
           </div>
+
+
 
             <div className="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2 pt-4">
               <Button
@@ -248,7 +370,11 @@ export function AddCarDialog() {
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isPending || uploading} className="w-full sm:w-auto">
+              <Button 
+                type="submit" 
+                disabled={isPending || uploading || securityStatus.rateLimitRemaining <= 0} 
+                className="w-full sm:w-auto"
+              >
                 {isPending || uploading ? "Adicionando..." : "Adicionar Carro"}
               </Button>
             </div>

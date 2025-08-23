@@ -127,7 +127,7 @@ export function useSounds() {
     if (saved) {
       return JSON.parse(saved);
     }
-    return { enabled: false, volume: 0.15 }; // Desabilitado por padrão
+    return { enabled: true, volume: 0.15 }; // Habilitado por padrão
   });
 
   useEffect(() => {

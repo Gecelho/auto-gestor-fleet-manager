@@ -2,12 +2,13 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { SecureInput } from "@/components/ui/secure-input";
 import { Edit, Loader2 } from "lucide-react";
 import { useUpdateDriver } from "@/hooks/useCarDetails";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useSecureForm } from "@/hooks/useSecureForm";
+import { SecurityLogger } from "@/lib/security";
 import { Driver } from "@/types/database";
 
 interface EditDriverDialogProps {
@@ -27,6 +28,21 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
 
   const updateDriverMutation = useUpdateDriver();
 
+  // Configuração de segurança para o formulário
+  const fieldRules = {
+    name: { min: 2, max: 100, type: 'text' as const, required: true },
+    phone: { min: 0, max: 15, type: 'numeric' as const, required: false },
+    cpf: { min: 0, max: 14, type: 'numeric' as const, required: false },
+    address: { min: 0, max: 200, type: 'text' as const, required: false }
+  };
+
+  const { secureSubmit, securityStatus } = useSecureForm(formData, {
+    enableCSRF: true,
+    enableSanitization: true,
+    enableRateLimit: true,
+    strictMode: true
+  });
+
   const resetForm = () => {
     setFormData({
       name: driver?.name || "",
@@ -36,24 +52,36 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = secureSubmit(async (sanitizedData) => {
     try {
+      SecurityLogger.log('info', 'driver_update_initiated', {
+        carId,
+        driverName: sanitizedData.name?.substring(0, 30) + '...'
+      });
+
       await updateDriverMutation.mutateAsync({
         car_id: carId,
-        name: formData.name,
-        phone: formData.phone || undefined,
-        cpf: formData.cpf || undefined,
-        address: formData.address || undefined,
+        name: sanitizedData.name,
+        phone: sanitizedData.phone || undefined,
+        cpf: sanitizedData.cpf || undefined,
+        address: sanitizedData.address || undefined,
+      });
+
+      SecurityLogger.log('info', 'driver_updated_successfully', {
+        carId,
+        driverName: sanitizedData.name?.substring(0, 30) + '...'
       });
 
       successSound(); // Som de sucesso ao editar motorista
       setOpen(false);
     } catch (error) {
+      SecurityLogger.log('error', 'driver_update_failed', {
+        carId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
       console.error("Error updating driver:", error);
     }
-  };
+  }, fieldRules);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
@@ -87,8 +115,12 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nome Completo *</Label>
-            <Input
+            <SecureInput
               id="name"
+              fieldType="text"
+              maxLength={100}
+              strictMode={true}
+              rateLimitKey="driver_name_input"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Digite o nome completo"
@@ -98,8 +130,12 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="phone">Telefone</Label>
-            <Input
+            <SecureInput
               id="phone"
+              fieldType="numeric"
+              maxLength={15}
+              strictMode={true}
+              rateLimitKey="driver_phone_input"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="(11) 99999-9999"
@@ -108,8 +144,12 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="cpf">CPF</Label>
-            <Input
+            <SecureInput
               id="cpf"
+              fieldType="numeric"
+              maxLength={14}
+              strictMode={true}
+              rateLimitKey="driver_cpf_input"
               value={formData.cpf}
               onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
               placeholder="000.000.000-00"
@@ -118,11 +158,16 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="address">Endereço</Label>
-            <Textarea
+            <SecureInput
               id="address"
+              fieldType="text"
+              maxLength={200}
+              strictMode={false}
+              rateLimitKey="driver_address_input"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="Digite o endereço completo"
+              multiline={true}
               rows={3}
             />
           </div>

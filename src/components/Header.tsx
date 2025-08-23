@@ -1,11 +1,13 @@
 
-import { Car, Settings } from "lucide-react";
-import { SettingsDialog } from "./SettingsDialog";
+import { Car } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { ProfileDropdown } from "./ProfileDropdown";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Header() {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   return (
     <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -26,10 +28,13 @@ export function Header() {
             </div>
           </div>
           
-          {/* Actions */}
+          {/* User Info and Actions */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle (only on desktop) */}
             {!isMobile && <ThemeToggle />}
-            <SettingsDialog />
+            
+            {/* Profile Dropdown */}
+            <ProfileDropdown />
           </div>
         </div>
       </div>

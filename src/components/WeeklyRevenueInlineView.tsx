@@ -4,7 +4,9 @@ import { format, startOfWeek, endOfWeek, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { EditRevenueDialog } from "@/components/EditRevenueDialog";
 import { DeleteRevenueDialog } from "@/components/DeleteRevenueDialog";
+import { AddRevenueDialog } from "@/components/AddRevenueDialog";
 import { displayCurrency } from "@/lib/formatters";
+import { BarChart3 } from "lucide-react";
 
 interface Revenue {
   id: string;
@@ -112,7 +114,14 @@ export function WeeklyRevenueInlineView({ revenues, carId }: WeeklyRevenueInline
 
   if (sortedWeeks.length === 0) {
     return (
-      <p className="text-muted-foreground text-center py-8">Nenhuma receita cadastrada</p>
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <BarChart3 className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma receita cadastrada</h3>
+        <p className="text-muted-foreground mb-6">Comece adicionando sua primeira receita</p>
+        <AddRevenueDialog carId={carId} />
+      </div>
     );
   }
 

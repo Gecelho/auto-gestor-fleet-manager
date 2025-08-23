@@ -6,6 +6,7 @@ import { useFutureExpenses, useCarCurrentMileage } from "@/hooks/useFutureExpens
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { displayCurrency, displayCompactCurrency } from "@/lib/formatters";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { CarIcon } from "./CarIcon";
 
 interface CarCardProps {
   id: string;
@@ -62,8 +63,9 @@ export function CarCard({
     }
   };
 
-  // Use only valid images from Supabase or placeholder
-  const imageUrl = image && image.includes('supabase') ? image : "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=400&h=300&fit=crop";
+  // Check if we have a valid image
+  const hasValidImage = image && image.includes('supabase');
+  const imageUrl = hasValidImage ? image : "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=400&h=300&fit=crop";
 
   return (
     <div 
@@ -76,16 +78,23 @@ export function CarCard({
       {/* Header */}
       <div className={`flex items-start justify-between ${isMobile ? 'mb-2' : 'mb-4'}`}>
         <div className={`flex items-start flex-1 min-w-0 ${isMobile ? 'space-x-2' : 'space-x-3'}`}>
-          <div className={`rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 ${isMobile ? 'w-14 h-14' : 'w-12 h-12'}`}>
-            <img 
-              src={imageUrl} 
-              alt={name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w-400&h=300&fit=crop";
-              }}
-            />
+          <div className={`rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 flex items-center justify-center ${isMobile ? 'w-14 h-14' : 'w-12 h-12'}`}>
+            {hasValidImage ? (
+              <img 
+                src={imageUrl} 
+                alt={name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w-400&h=300&fit=crop";
+                }}
+              />
+            ) : (
+              <CarIcon 
+                size={isMobile ? 28 : 24} 
+                className="text-gray-400 dark:text-gray-500 group-hover:scale-105 transition-transform duration-300" 
+              />
+            )}
           </div>
           <div className={`min-w-0 flex-1 flex flex-col justify-between ${isMobile ? 'h-14' : 'h-12'}`}>
             <div>

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { FileBarChart, Loader2, Calendar, TrendingUp, Car } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useGeneralReport, useGeneralPeriodReport } from "@/hooks/useGeneralReport";
 import { useCars } from "@/hooks/useCars";
 import { displayCurrency } from "@/lib/formatters";
@@ -209,10 +210,7 @@ export function GeneralReportDialog() {
             </div>
 
             {monthlyLoading && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                <span>Gerando relatório...</span>
-              </div>
+              <LoadingSpinner size="md" text="Gerando relatório..." />
             )}
 
             {monthlyData && (
@@ -390,10 +388,7 @@ export function GeneralReportDialog() {
             </div>
 
             {periodLoading && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                <span>Gerando relatório...</span>
-              </div>
+              <LoadingSpinner size="md" text="Gerando relatório..." />
             )}
 
             {periodData && (

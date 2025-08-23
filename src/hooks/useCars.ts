@@ -2,12 +2,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Car, CarWithFinancials } from "@/types/database";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { secureSupabaseOperation } from "@/lib/supabase-interceptor";
+import { SecurityLogger } from "@/lib/security";
 
 export const useCars = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["cars"],
+    queryKey: ["cars", user?.id],
     queryFn: async (): Promise<CarWithFinancials[]> => {
       const { data: cars, error: carsError } = await supabase
         .from("cars")
@@ -45,22 +49,68 @@ export const useCars = () => {
 
       return carsWithFinancials;
     },
+    enabled: !!user?.id, // Only run query when user is authenticated
   });
 };
 
 export const useAddCar = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (carData: Omit<Car, "id" | "created_at" | "updated_at">) => {
-      const { data, error } = await supabase
-        .from("cars")
-        .insert(carData)
-        .select()
-        .single();
+    mutationFn: async (carData: Omit<Car, "id" | "created_at" | "updated_at" | "user_id">) => {
+      // Tentando adicionar carro - logs removidos para produção
+      
+      if (!user?.id) {
+        console.error("❌ Usuário não autenticado");
+        SecurityLogger.log('error', 'unauthenticated_car_creation_attempt', {
+          carData: JSON.stringify(carData).substring(0, 200)
+        });
+        throw new Error("Usuário não autenticado");
+      }
 
-      if (error) throw error;
+      const dataToInsert = {
+        ...carData,
+        user_id: user.id
+      };
+      
+      // Dados para inserção - log removido
+
+      // Usar operação segura do Supabase
+      const { data, error } = await secureSupabaseOperation.insert<Car>(
+        supabase,
+        'cars',
+        dataToInsert,
+        user.id
+      );
+
+      if (error) {
+        console.error("❌ Erro ao inserir carro:", error);
+        
+        // Log específico para violações de segurança
+        if (error.code === 'SECURITY_VALIDATION_FAILED') {
+          SecurityLogger.log('critical', 'car_creation_security_violation', {
+            userId: user.id,
+            violations: error.details,
+            originalData: JSON.stringify(carData).substring(0, 500)
+          });
+          
+          throw new Error(`Dados inválidos: ${error.message}`);
+        }
+        
+        throw error;
+      }
+      
+      // Carro inserido com sucesso - log removido
+      
+      // Log de sucesso
+      SecurityLogger.log('info', 'car_created_successfully', {
+        userId: user.id,
+        carId: data?.id,
+        carName: data?.name
+      });
+      
       return data;
     },
     onSuccess: () => {
@@ -71,12 +121,16 @@ export const useAddCar = () => {
       });
     },
     onError: (error) => {
+      console.error("🚨 Erro completo ao adicionar carro:", error);
+      console.error("🚨 Mensagem do erro:", error.message);
+      console.error("🚨 Detalhes do erro:", error.details);
+      console.error("🚨 Código do erro:", error.code);
+      
       toast({
         title: "Erro ao adicionar carro",
-        description: "Tente novamente mais tarde.",
+        description: error.message || "Tente novamente mais tarde.",
         variant: "destructive",
       });
-      console.error("Error adding car:", error);
     },
   });
 };
@@ -84,21 +138,53 @@ export const useAddCar = () => {
 export const useUpdateCar = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Car> & { id: string }) => {
-      const { data, error } = await supabase
-        .from("cars")
-        .update(updates)
-        .eq("id", id)
-        .select()
-        .single();
+      if (!user?.id) {
+        SecurityLogger.log('error', 'unauthenticated_car_update_attempt', {
+          carId: id,
+          updates: JSON.stringify(updates).substring(0, 200)
+        });
+        throw new Error("Usuário não autenticado");
+      }
 
-      if (error) throw error;
+      // Usar operação segura do Supabase
+      const { data, error } = await secureSupabaseOperation.update<Car>(
+        supabase,
+        'cars',
+        updates,
+        id,
+        user.id
+      );
+
+      if (error) {
+        if (error.code === 'SECURITY_VALIDATION_FAILED') {
+          SecurityLogger.log('critical', 'car_update_security_violation', {
+            userId: user.id,
+            carId: id,
+            violations: error.details,
+            originalData: JSON.stringify(updates).substring(0, 500)
+          });
+          
+          throw new Error(`Dados inválidos: ${error.message}`);
+        }
+        
+        throw error;
+      }
+      
+      SecurityLogger.log('info', 'car_updated_successfully', {
+        userId: user.id,
+        carId: id,
+        updatedFields: Object.keys(updates)
+      });
+      
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
+      queryClient.invalidateQueries({ queryKey: ["car-details", data.id] });
       toast({
         title: "Carro atualizado com sucesso!",
       });

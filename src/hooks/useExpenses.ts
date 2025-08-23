@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Expense {
   id: string;
@@ -19,8 +20,10 @@ type AddExpenseData = Omit<Expense, "id" | "created_at">;
 type UpdateExpenseData = Pick<Expense, "id" | "description" | "observation" | "mileage" | "next_mileage" | "value" | "date">;
 
 export const useExpenses = (carId: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ["expenses", carId],
+    queryKey: ["expenses", carId, user?.id],
     queryFn: async (): Promise<Expense[]> => {
       const { data, error } = await supabase
         .from("expenses")
@@ -31,18 +34,27 @@ export const useExpenses = (carId: string) => {
       if (error) throw error;
       return data || [];
     },
+    enabled: !!user?.id && !!carId, // Only run when user is authenticated and carId is provided
   });
 };
 
 export const useAddExpense = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (expenseData: AddExpenseData) => {
+      if (!user?.id) {
+        throw new Error("Usuário não autenticado");
+      }
+
       const { data, error } = await supabase
         .from("expenses")
-        .insert(expenseData)
+        .insert({
+          ...expenseData,
+          user_id: user.id
+        })
         .select()
         .single();
 

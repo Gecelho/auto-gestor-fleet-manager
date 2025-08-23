@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { startOfWeek, endOfWeek, format } from "date-fns";
 
 interface Revenue {
@@ -18,8 +19,10 @@ type AddRevenueData = Omit<Revenue, "id" | "created_at">;
 type UpdateRevenueData = Pick<Revenue, "id" | "description" | "value" | "date" | "type">;
 
 export const useRevenues = (carId: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ["revenues", carId],
+    queryKey: ["revenues", carId, user?.id],
     queryFn: async (): Promise<Revenue[]> => {
       const { data, error } = await supabase
         .from("revenues")
@@ -30,25 +33,34 @@ export const useRevenues = (carId: string) => {
       if (error) throw error;
       return data || [];
     },
+    enabled: !!user?.id && !!carId, // Only run when user is authenticated and carId is provided
   });
 };
 
 export const useAddRevenue = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (revenueData: AddRevenueData) => {
+      if (!user?.id) {
+        throw new Error("Usuário não autenticado");
+      }
+
       // Verificar se a data está dentro de uma semana específica
       const revenueDate = new Date(revenueData.date);
       const weekStart = startOfWeek(revenueDate, { weekStartsOn: 1 });
       const weekEnd = endOfWeek(revenueDate, { weekStartsOn: 1 });
 
-      console.log(`Adding revenue for date ${revenueData.date} in week ${format(weekStart, 'yyyy-MM-dd')} to ${format(weekEnd, 'yyyy-MM-dd')}`);
+      // Adding revenue - log removido para produção
 
       const { data, error } = await supabase
         .from("revenues")
-        .insert(revenueData)
+        .insert({
+          ...revenueData,
+          user_id: user.id
+        })
         .select()
         .single();
 

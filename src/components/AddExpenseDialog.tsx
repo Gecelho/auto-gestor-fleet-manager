@@ -2,14 +2,16 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { SecureInput } from "@/components/ui/secure-input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { MileageInput } from "@/components/ui/mileage-input";
 import { Plus, Loader2 } from "lucide-react";
 import { useAddExpense } from "@/hooks/useExpenses";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useSecureForm } from "@/hooks/useSecureForm";
+import { SecurityLogger } from "@/lib/security";
 
 interface AddExpenseDialogProps {
   carId: string;
@@ -31,6 +33,21 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
   });
 
   const addExpenseMutation = useAddExpense();
+  
+  // Configuração de segurança para o formulário
+  const fieldRules = {
+    description: { min: 2, max: 200, type: 'text' as const, required: true },
+    observation: { min: 0, max: 1000, type: 'description' as const, required: false },
+    date: { required: true },
+    value: { min: 1, required: true }
+  };
+
+  const { secureSubmit, securityStatus } = useSecureForm(formData, {
+    enableCSRF: true,
+    enableSanitization: true,
+    enableRateLimit: true,
+    strictMode: true
+  });
 
   const resetForm = () => {
     setFormData({
@@ -46,27 +63,39 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = secureSubmit(async (sanitizedData) => {
     try {
+      SecurityLogger.log('info', 'expense_creation_initiated', {
+        carId,
+        description: sanitizedData.description?.substring(0, 50) + '...'
+      });
+
       await addExpenseMutation.mutateAsync({
         car_id: carId,
-        description: formData.description,
-        observation: formData.observation || undefined,
+        description: sanitizedData.description,
+        observation: sanitizedData.observation || undefined,
         mileage: formData.mileageNumeric || undefined,
         next_mileage: formData.nextMileageNumeric || undefined,
         value: formData.valueNumeric,
-        date: formData.date,
+        date: sanitizedData.date,
+      });
+
+      SecurityLogger.log('info', 'expense_created_successfully', {
+        carId,
+        value: formData.valueNumeric
       });
 
       successSound(); // Som de sucesso ao adicionar despesa
       resetForm();
       setOpen(false);
     } catch (error) {
+      SecurityLogger.log('error', 'expense_creation_failed', {
+        carId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
       console.error("Error adding expense:", error);
     }
-  };
+  }, fieldRules);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
@@ -99,8 +128,12 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="description">Descrição *</Label>
-            <Input
+            <SecureInput
               id="description"
+              fieldType="text"
+              maxLength={200}
+              strictMode={true}
+              rateLimitKey="expense_description_input"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Ex: Troca de óleo"
@@ -110,11 +143,16 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="observation">Observação</Label>
-            <Textarea
+            <SecureInput
               id="observation"
+              fieldType="description"
+              maxLength={1000}
+              strictMode={false}
+              rateLimitKey="expense_observation_input"
               value={formData.observation}
               onChange={(e) => setFormData({ ...formData, observation: e.target.value })}
               placeholder="Descreva detalhes sobre esta despesa..."
+              multiline={true}
               rows={3}
             />
           </div>

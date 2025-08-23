@@ -4,9 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
 import { SoundTabsTrigger } from "@/components/ui/sound-tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Phone, MessageCircle, Loader2, Plus, TrendingUp, TrendingDown, Car, Settings, BarChart3, Calendar, User, Wrench, Trash2 } from "lucide-react";
+import { ArrowLeft, Phone, MessageCircle, Loader2, Plus, TrendingUp, TrendingDown, Car, Settings, BarChart3, Calendar, User, Wrench, Trash2, Upload } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { DollarSign } from "lucide-react";
 import { useCarDetails } from "@/hooks/useCarDetails";
+import { useUpdateCar } from "@/hooks/useCars";
+import { useImageUpload } from "@/hooks/useImageUpload";
 import { AddExpenseDialog } from "@/components/AddExpenseDialog";
 import { AddRevenueDialog } from "@/components/AddRevenueDialog";
 import { MonthlyReportDialog } from "@/components/MonthlyReportDialog";
@@ -26,12 +29,18 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { EndOfContentIndicator } from "@/components/EndOfContentIndicator";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { SubscriptionBlocker } from "@/components/SubscriptionBlocker";
+import { CarIcon } from "@/components/CarIcon";
+import { useRef } from "react";
 
 export default function CarDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { data, isLoading, error } = useCarDetails(id!);
+  const { data, isLoading, error, refetch } = useCarDetails(id!);
   const { clickSound } = useSoundEffects();
+  const updateCar = useUpdateCar();
+  const { uploadImage, uploading } = useImageUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Função para truncar texto
   const truncateText = (text: string, maxLength: number = 30) => {
@@ -42,7 +51,7 @@ export default function CarDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <LoadingSpinner size="md" />
       </div>
     );
   }
@@ -71,16 +80,44 @@ export default function CarDetail() {
     alugado: { label: "Alugado", className: "bg-info text-info-foreground" }
   };
 
-  const imageUrl = car.image_url && car.image_url.includes('supabase') ? car.image_url : "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
+  const hasValidImage = car.image_url && car.image_url.includes('supabase');
 
   const handleDeleteSuccess = () => {
     navigate("/");
   };
 
+  const handleImageUpload = async (file: File) => {
+    if (!file || !car) return;
+
+    const imageUrl = await uploadImage(file);
+    if (imageUrl) {
+      await updateCar.mutateAsync({
+        id: car.id,
+        image_url: imageUrl
+      });
+      // Refetch para atualizar a página com a nova imagem
+      refetch();
+    }
+  };
+
+  const handlePlaceholderClick = () => {
+    if (!hasValidImage && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Clean Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <SubscriptionBlocker feature="basic">
+      <div className="min-h-screen bg-background">
+        {/* Clean Header */}
+        <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left side - Back button and car info */}
@@ -98,16 +135,19 @@ export default function CarDetail() {
               </Button>
               
               <div className="flex items-center space-x-1.5 sm:space-x-3 min-w-0 flex-1">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 shadow-sm">
-                  <img 
-                    src={imageUrl} 
-                    alt={car.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
-                    }}
-                  />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 shadow-sm flex items-center justify-center">
+                  {hasValidImage ? (
+                    <img 
+                      src={car.image_url} 
+                      alt={car.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <CarIcon 
+                      size={20} 
+                      className="text-gray-400 dark:text-gray-500" 
+                    />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <h1 className="text-base sm:text-lg font-bold gradient-text truncate">
@@ -163,17 +203,52 @@ export default function CarDetail() {
         {/* Car Image */}
         <div className="bg-background border border-border rounded-xl p-6">
           <div className="rounded-xl overflow-hidden bg-muted h-32 sm:h-48 md:h-64 lg:h-80 relative">
-            <img 
-              src={imageUrl} 
-              alt={car.name}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "https://images.unsplash.com/photo-1494976688731-30fc958eeb5e?w=800&h=400&fit=crop";
-              }}
-            />
+            {hasValidImage ? (
+              <img 
+                src={car.image_url} 
+                alt={car.name}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div 
+                onClick={handlePlaceholderClick}
+                className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 cursor-pointer hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-700 dark:hover:to-gray-800 transition-all duration-300 group"
+              >
+                {uploading ? (
+                  <div className="flex flex-col items-center">
+                    <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400 dark:text-gray-500 animate-spin mb-4" />
+                    <p className="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">
+                      Enviando foto...
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white dark:bg-gray-700 rounded-2xl flex items-center justify-center shadow-lg mb-4 group-hover:shadow-xl transition-shadow duration-300">
+                      <Upload className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 transition-colors duration-300" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                        Clique para adicionar foto
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">
+                        Selecione uma imagem do veículo
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
           <p className="text-sm font-light text-muted-foreground text-center mt-3">Foto do Veículo</p>
+          
+          {/* Input de arquivo oculto */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
         </div>
 
         {/* Financial Summary Cards */}
@@ -334,9 +409,9 @@ export default function CarDetail() {
           <TabsContent value="expenses">
             <div className="space-y-3">
               {/* Header responsivo */}
-              <div className="text-center sm:text-left">
+              <div className="text-center sm:text-left mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                  <h3 className="text-base font-bold text-foreground mb-3 sm:mb-0">Despesas</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-3 sm:mb-0">Despesas</h3>
                   <div className="sm:hidden">
                     <AddExpenseDialog carId={car.id} />
                   </div>
@@ -581,6 +656,7 @@ export default function CarDetail() {
         
         <EndOfContentIndicator />
       </div>
-    </div>
+      </div>
+    </SubscriptionBlocker>
   );
 }

@@ -1,3 +1,18 @@
+// Updated types reflecting the correct user/driver relationship
+
+export interface User {
+  id: string; // UUID from auth.users
+  full_name?: string;
+  email: string;
+  phone?: string;
+  company_name?: string;
+  subscription_status: 'active' | 'expired' | 'trial' | 'suspended';
+  subscription_plan: 'basic' | 'premium' | 'enterprise';
+  subscription_expires_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Car {
   id: string;
   name: string;
@@ -8,7 +23,20 @@ export interface Car {
   purchase_date?: string;
   mileage?: number;
   notes?: string;
-  status: 'quitado' | 'andamento' | 'alugado';
+  status?: 'quitado' | 'andamento' | 'alugado';
+  user_id: string; // Belongs to car owner (User)
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Driver {
+  id: string;
+  name: string;
+  phone?: string;
+  cpf?: string;
+  address?: string;
+  car_id: string; // Which car they drive
+  owner_id: string; // Who hired them (User, NOT auth user)
   created_at: string;
   updated_at: string;
 }
@@ -17,11 +45,10 @@ export interface Expense {
   id: string;
   car_id: string;
   description: string;
-  observation?: string;
-  mileage?: number;
-  next_mileage?: number;
   value: number;
   date: string;
+  category: 'manutenção' | 'documentos' | 'seguro' | 'outros';
+  user_id: string; // Belongs to car owner (User)
   created_at: string;
 }
 
@@ -32,61 +59,94 @@ export interface Revenue {
   value: number;
   date: string;
   type: 'aluguel' | 'venda' | 'outros';
+  user_id: string; // Belongs to car owner (User)
   created_at: string;
 }
 
-export interface Driver {
-  id: string;
-  car_id: string;
+// Extended types with relationships
+export interface CarWithDriver extends Car {
+  driver?: Driver;
+}
+
+export interface CarWithFinancials extends Car {
+  expenses?: Expense[];
+  revenues?: Revenue[];
+  total_expenses?: number;
+  total_revenues?: number;
+  profit?: number;
+}
+
+export interface DriverWithCar extends Driver {
+  car?: Car;
+}
+
+// Form types
+export interface CarFormData {
+  name: string;
+  plate: string;
+  image_url?: string;
+  purchase_value: number;
+  payment_method?: string;
+  purchase_date?: string;
+  mileage?: number;
+  notes?: string;
+  status?: 'quitado' | 'andamento' | 'alugado';
+}
+
+export interface DriverFormData {
   name: string;
   phone?: string;
   cpf?: string;
   address?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CarWithFinancials extends Car {
-  totalRevenue: number;
-  totalExpenses: number;
-  remainingBalance: number;
-}
-
-export interface CarMileageConfig {
-  id: string;
   car_id: string;
-  weekly_km_limit: number;
-  overage_rate_per_km: number;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface WeeklyMileageControl {
-  id: string;
+// Insert types (without auto-generated fields)
+export type UserInsert = Omit<User, 'id' | 'created_at' | 'updated_at'>;
+export type CarInsert = Omit<Car, 'id' | 'created_at' | 'updated_at'>;
+export type DriverInsert = Omit<Driver, 'id' | 'created_at' | 'updated_at' | 'owner_id'>;
+export type ExpenseInsert = Omit<Expense, 'id' | 'created_at' | 'user_id'>;
+export type RevenueInsert = Omit<Revenue, 'id' | 'created_at' | 'user_id'>;
+
+export interface ExpenseFormData {
   car_id: string;
-  week_start_date: string;
-  week_end_date: string;
-  planned_km: number;
-  used_km: number;
-  remaining_km: number;
-  overage_km: number;
-  overage_fee: number;
-  created_at: string;
-  updated_at: string;
+  description: string;
+  value: number;
+  date: string;
+  category: 'manutenção' | 'documentos' | 'seguro' | 'outros';
 }
 
-export interface MileageBalance {
-  id: string;
+export interface RevenueFormData {
   car_id: string;
-  accumulated_km: number;
-  last_updated: string;
+  description: string;
+  value: number;
+  date: string;
+  type: 'aluguel' | 'venda' | 'outros';
 }
 
-export interface WeeklyMileageSummary extends WeeklyMileageControl {
-  car_name: string;
-  car_plate: string;
-  driver_name?: string;
-  weekly_km_limit: number;
-  overage_rate_per_km: number;
-  accumulated_km: number;
+// Database insert/update types
+export interface CarInsert extends Omit<Car, 'id' | 'created_at' | 'updated_at' | 'user_id'> {
+  id?: string;
+  user_id?: string; // Will be set automatically by trigger
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DriverInsert extends Omit<Driver, 'id' | 'created_at' | 'updated_at' | 'owner_id'> {
+  id?: string;
+  owner_id?: string; // Will be set automatically by trigger
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ExpenseInsert extends Omit<Expense, 'id' | 'created_at' | 'user_id'> {
+  id?: string;
+  user_id?: string; // Will be set automatically by trigger
+  created_at?: string;
+}
+
+export interface RevenueInsert extends Omit<Revenue, 'id' | 'created_at' | 'user_id'> {
+  id?: string;
+  user_id?: string; // Will be set automatically by trigger
+  created_at?: string;
 }
