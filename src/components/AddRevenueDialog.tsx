@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SecureInput } from "@/components/ui/secure-input";
+import { SimpleInput } from "@/components/ui/simple-input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Plus, Loader2 } from "lucide-react";
 import { useAddRevenue } from "@/hooks/useRevenues";
@@ -120,12 +120,9 @@ export function AddRevenueDialog({ carId }: AddRevenueDialogProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="description">Descrição *</Label>
-            <SecureInput
+            <SimpleInput
               id="description"
-              fieldType="text"
               maxLength={200}
-              strictMode={true}
-              rateLimitKey="revenue_description_input"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Ex: Aluguel mensal"

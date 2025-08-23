@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { SecureInput } from "@/components/ui/secure-input";
+import { SimpleInput } from "@/components/ui/simple-input";
 import { Edit, Loader2 } from "lucide-react";
 import { useUpdateDriver } from "@/hooks/useCarDetails";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
@@ -115,12 +115,9 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nome Completo *</Label>
-            <SecureInput
+            <SimpleInput
               id="name"
-              fieldType="text"
               maxLength={100}
-              strictMode={true}
-              rateLimitKey="driver_name_input"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Digite o nome completo"
@@ -130,12 +127,9 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="phone">Telefone</Label>
-            <SecureInput
+            <SimpleInput
               id="phone"
-              fieldType="numeric"
               maxLength={15}
-              strictMode={true}
-              rateLimitKey="driver_phone_input"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="(11) 99999-9999"
@@ -144,12 +138,9 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="cpf">CPF</Label>
-            <SecureInput
+            <SimpleInput
               id="cpf"
-              fieldType="numeric"
               maxLength={14}
-              strictMode={true}
-              rateLimitKey="driver_cpf_input"
               value={formData.cpf}
               onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
               placeholder="000.000.000-00"
@@ -158,12 +149,9 @@ export function EditDriverDialog({ driver, carId }: EditDriverDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="address">Endereço</Label>
-            <SecureInput
+            <SimpleInput
               id="address"
-              fieldType="text"
               maxLength={200}
-              strictMode={false}
-              rateLimitKey="driver_address_input"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="Digite o endereço completo"

@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { CarCard } from "@/components/CarCard";
 import { FinancialSummary } from "@/components/FinancialSummary";
 import { Header } from "@/components/Header";
@@ -10,15 +11,44 @@ import { useCars } from "@/hooks/useCars";
 import { EndOfContentIndicator } from "@/components/EndOfContentIndicator";
 import { LoadingSpinner, LoadingCard } from "@/components/LoadingSpinner";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Plus, BarChart3, RefreshCw } from "lucide-react";
 import { AddCarDialog } from "@/components/AddCarDialog";
 import { SubscriptionBlocker } from "@/components/SubscriptionBlocker";
 import { SubscriptionWarning } from "@/components/SubscriptionWarning";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigationCache } from "@/hooks/useNavigationCache";
 
 const Index = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { navigateToCarDetail, refreshCarsCache } = useNavigationCache();
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: cars, isLoading, error } = useCars();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { data: cars, isLoading, error, refetch } = useCars();
+
+  // Force refresh cars data when component mounts or user changes
+  useEffect(() => {
+    if (user?.id) {
+      // Invalidate and refetch cars data when returning to index
+      queryClient.invalidateQueries({ queryKey: ["cars"] });
+      queryClient.removeQueries({ queryKey: ["cars"] }); // Remove cached data
+      refetch();
+    }
+  }, [user?.id, queryClient, refetch]);
+
+  // Manual refresh function
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshCarsCache();
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Filter cars based on search term
   const filteredCars = cars?.filter(car =>
@@ -35,7 +65,7 @@ const Index = () => {
   }), { totalRevenue: 0, totalExpenses: 0, totalPendingBalance: 0 }) || { totalRevenue: 0, totalExpenses: 0, totalPendingBalance: 0 };
 
   const handleCarClick = (carId: string) => {
-    navigate(`/car/${carId}`);
+    navigateToCarDetail(carId);
   };
 
   if (error) {
@@ -90,6 +120,15 @@ const Index = () => {
                 <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs font-medium">
                   {filteredCars.length}
                 </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing || isLoading}
+                  className="h-8 w-8 p-0"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
               
               <div className="flex items-center gap-3">
@@ -110,11 +149,23 @@ const Index = () => {
             </div>
             
             {/* Cars Grid */}
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
+            {isLoading || isRefreshing ? (
+              <div className="space-y-6">
+                <LoadingSpinner 
+                  size="lg" 
+                  text={isRefreshing ? "Atualizando carros..." : "Carregando seus carros..."} 
+                  timeout={3000}
+                  showText={false}
+                  onTimeout={() => {
+                    console.warn('Cars loading timeout, attempting refetch');
+                    refetch();
+                  }}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                </div>
               </div>
             ) : filteredCars.length === 0 ? (
               <div className="text-center py-16">

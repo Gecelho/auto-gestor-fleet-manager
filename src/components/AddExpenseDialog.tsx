@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { SecureInput } from "@/components/ui/secure-input";
+import { SimpleInput } from "@/components/ui/simple-input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { MileageInput } from "@/components/ui/mileage-input";
 import { Plus, Loader2 } from "lucide-react";
@@ -128,12 +128,8 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="description">Descrição *</Label>
-            <SecureInput
+            <SimpleInput
               id="description"
-              fieldType="text"
-              maxLength={200}
-              strictMode={true}
-              rateLimitKey="expense_description_input"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Ex: Troca de óleo"
@@ -143,12 +139,8 @@ export function AddExpenseDialog({ carId }: AddExpenseDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="observation">Observação</Label>
-            <SecureInput
+            <SimpleInput
               id="observation"
-              fieldType="description"
-              maxLength={1000}
-              strictMode={false}
-              rateLimitKey="expense_observation_input"
               value={formData.observation}
               onChange={(e) => setFormData({ ...formData, observation: e.target.value })}
               placeholder="Descreva detalhes sobre esta despesa..."

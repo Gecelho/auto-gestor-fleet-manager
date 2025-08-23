@@ -7,23 +7,40 @@ export const useCarDetails = (carId: string) => {
   return useQuery({
     queryKey: ["car-details", carId],
     queryFn: async () => {
-      const [carResult, expensesResult, revenuesResult, driverResult] = await Promise.all([
-        supabase.from("cars").select("*").eq("id", carId).single(),
-        supabase.from("expenses").select("*").eq("car_id", carId).order("date", { ascending: false }),
-        supabase.from("revenues").select("*").eq("car_id", carId).order("date", { ascending: false }),
-        supabase.from("drivers").select("*").eq("car_id", carId).maybeSingle(),
-      ]);
+      try {
+        const [carResult, expensesResult, revenuesResult, driverResult] = await Promise.all([
+          supabase.from("cars").select("*").eq("id", carId).single(),
+          supabase.from("expenses").select("*").eq("car_id", carId).order("date", { ascending: false }),
+          supabase.from("revenues").select("*").eq("car_id", carId).order("date", { ascending: false }),
+          supabase.from("drivers").select("*").eq("car_id", carId).maybeSingle(),
+        ]);
 
-      if (carResult.error) throw carResult.error;
+        if (carResult.error) throw carResult.error;
 
-      return {
-        car: carResult.data as Car,
-        expenses: expensesResult.data as Expense[] || [],
-        revenues: revenuesResult.data as Revenue[] || [],
-        driver: driverResult.data as Driver | null,
-      };
+        return {
+          car: carResult.data as Car,
+          expenses: expensesResult.data as Expense[] || [],
+          revenues: revenuesResult.data as Revenue[] || [],
+          driver: driverResult.data as Driver | null,
+        };
+      } catch (error) {
+        console.error('Error loading car details:', error);
+        throw error;
+      }
     },
     enabled: !!carId,
+    retry: (failureCount, error) => {
+      // Don't retry on auth errors or not found errors
+      if (error?.message?.includes('auth') || error?.message?.includes('unauthorized') || error?.message?.includes('not found')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    staleTime: 0, // Always consider data stale to force fresh fetches
+    gcTime: 1 * 60 * 1000, // Keep in cache for 1 minute only
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnMount: true, // Always refetch on mount
   });
 };
 

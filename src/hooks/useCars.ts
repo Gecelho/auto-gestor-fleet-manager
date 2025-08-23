@@ -13,43 +13,71 @@ export const useCars = () => {
   return useQuery({
     queryKey: ["cars", user?.id],
     queryFn: async (): Promise<CarWithFinancials[]> => {
-      const { data: cars, error: carsError } = await supabase
-        .from("cars")
-        .select("*")
-        .order("created_at", { ascending: false });
+      try {
+        const { data: cars, error: carsError } = await supabase
+          .from("cars")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (carsError) throw carsError;
+        if (carsError) throw carsError;
 
-      const carsWithFinancials = await Promise.all(
-        (cars || []).map(async (car) => {
-          // Get expenses
-          const { data: expenses } = await supabase
-            .from("expenses")
-            .select("value")
-            .eq("car_id", car.id);
+        const carsWithFinancials = await Promise.all(
+          (cars || []).map(async (car) => {
+            try {
+              // Get expenses
+              const { data: expenses } = await supabase
+                .from("expenses")
+                .select("value")
+                .eq("car_id", car.id);
 
-          // Get revenues
-          const { data: revenues } = await supabase
-            .from("revenues")
-            .select("value")
-            .eq("car_id", car.id);
+              // Get revenues
+              const { data: revenues } = await supabase
+                .from("revenues")
+                .select("value")
+                .eq("car_id", car.id);
 
-          const totalExpenses = expenses?.reduce((sum, exp) => sum + Number(exp.value), 0) || 0;
-          const totalRevenue = revenues?.reduce((sum, rev) => sum + Number(rev.value), 0) || 0;
-          const remainingBalance = Number(car.purchase_value) - (totalRevenue - totalExpenses);
+              const totalExpenses = expenses?.reduce((sum, exp) => sum + Number(exp.value), 0) || 0;
+              const totalRevenue = revenues?.reduce((sum, rev) => sum + Number(rev.value), 0) || 0;
+              const remainingBalance = Number(car.purchase_value) - (totalRevenue - totalExpenses);
 
-          return {
-            ...car,
-            totalRevenue,
-            totalExpenses,
-            remainingBalance,
-          } as CarWithFinancials;
-        })
-      );
+              return {
+                ...car,
+                totalRevenue,
+                totalExpenses,
+                remainingBalance,
+              } as CarWithFinancials;
+            } catch (error) {
+              console.warn(`Error loading financials for car ${car.id}:`, error);
+              // Return car without financials if there's an error
+              return {
+                ...car,
+                totalRevenue: 0,
+                totalExpenses: 0,
+                remainingBalance: Number(car.purchase_value),
+              } as CarWithFinancials;
+            }
+          })
+        );
 
-      return carsWithFinancials;
+        return carsWithFinancials;
+      } catch (error) {
+        console.error('Error loading cars:', error);
+        throw error;
+      }
     },
     enabled: !!user?.id, // Only run query when user is authenticated
+    retry: (failureCount, error) => {
+      // Don't retry on auth errors
+      if (error?.message?.includes('auth') || error?.message?.includes('unauthorized')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    staleTime: 0, // Always consider data stale to force fresh fetches
+    gcTime: 1 * 60 * 1000, // Keep in cache for 1 minute only
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnMount: true, // Always refetch on mount
   });
 };
 

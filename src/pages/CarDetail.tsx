@@ -1,4 +1,5 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
@@ -31,16 +32,75 @@ import { EndOfContentIndicator } from "@/components/EndOfContentIndicator";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { SubscriptionBlocker } from "@/components/SubscriptionBlocker";
 import { CarIcon } from "@/components/CarIcon";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigationCache } from "@/hooks/useNavigationCache";
 
 export default function CarDetail() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { navigateToIndex, refreshCarDetailsCache } = useNavigationCache();
   const { id } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading, error, refetch } = useCarDetails(id!);
   const { clickSound } = useSoundEffects();
   const updateCar = useUpdateCar();
   const { uploadImage, uploading } = useImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // State for active tab with persistence
+  const [activeTab, setActiveTab] = useState(() => {
+    // First check URL params, then localStorage, then default
+    const urlTab = searchParams.get('tab');
+    if (urlTab && ['info', 'expenses', 'revenues', 'driver'].includes(urlTab)) {
+      return urlTab;
+    }
+    
+    const savedTab = localStorage.getItem(`carDetail_${id}_activeTab`);
+    if (savedTab && ['info', 'expenses', 'revenues', 'driver'].includes(savedTab)) {
+      return savedTab;
+    }
+    
+    return 'info';
+  });
+
+  // Force refresh car details when component mounts or user changes
+  useEffect(() => {
+    if (user?.id && id) {
+      // Use the navigation cache hook to refresh data
+      refreshCarDetailsCache(id);
+      refetch();
+    }
+  }, [user?.id, id, refreshCarDetailsCache, refetch]);
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    
+    // Save to localStorage
+    if (id) {
+      localStorage.setItem(`carDetail_${id}_activeTab`, value);
+    }
+    
+    // Update URL params
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('tab', value);
+    setSearchParams(newSearchParams, { replace: true });
+  };
+
+  // Sync URL params with activeTab on mount
+  useEffect(() => {
+    const urlTab = searchParams.get('tab');
+    if (urlTab && ['info', 'expenses', 'revenues', 'driver'].includes(urlTab) && urlTab !== activeTab) {
+      setActiveTab(urlTab);
+    } else if (!urlTab && activeTab !== 'info') {
+      // If no URL param but we have an active tab, update URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('tab', activeTab);
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  }, [searchParams, activeTab, setSearchParams]);
 
   // Função para truncar texto
   const truncateText = (text: string, maxLength: number = 30) => {
@@ -50,9 +110,17 @@ export default function CarDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <LoadingSpinner size="md" />
-      </div>
+      <LoadingSpinner 
+        size="lg" 
+        text="Carregando detalhes do carro..." 
+        timeout={3000}
+        showText={false}
+        fullScreen={true}
+        onTimeout={() => {
+          console.warn('Car details loading timeout, attempting refetch');
+          refetch();
+        }}
+      />
     );
   }
 
@@ -83,6 +151,8 @@ export default function CarDetail() {
   const hasValidImage = car.image_url && car.image_url.includes('supabase');
 
   const handleDeleteSuccess = () => {
+    // Invalidate cars cache before navigating back after deletion
+    queryClient.invalidateQueries({ queryKey: ["cars"] });
     navigate("/");
   };
 
@@ -127,7 +197,7 @@ export default function CarDetail() {
                 size="icon"
                 onClick={() => {
                   clickSound();
-                  navigate("/");
+                  navigateToIndex();
                 }}
                 className="rounded-xl h-7 w-7 sm:h-10 sm:w-10 flex-shrink-0 p-1"
               >
@@ -316,7 +386,7 @@ export default function CarDetail() {
         </div>
 
         {/* Modern Tabs */}
-        <Tabs defaultValue="info" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <div className="bg-background border border-border rounded-xl p-1 mx-0">
             <TabsList className="grid w-full grid-cols-4 bg-transparent gap-1 h-auto">
               <SoundTabsTrigger 

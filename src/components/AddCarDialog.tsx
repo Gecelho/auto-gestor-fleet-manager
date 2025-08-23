@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SecureInput } from "@/components/ui/secure-input";
+import { SimpleInput } from "@/components/ui/simple-input";
 import { useSecureForm } from "@/hooks/useSecureForm";
 import { useAddCar } from "@/hooks/useCars";
 import { useImageUpload } from "@/hooks/useImageUpload";
@@ -244,27 +244,21 @@ export function AddCarDialog() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome do Carro *</Label>
-              <SecureInput
+              <SimpleInput
                 id="name"
                 {...register("name", { required: true })}
                 placeholder="Ex: Honda Civic 2020"
-                fieldType="text"
                 maxLength={100}
-                strictMode={true}
-                rateLimitKey="car_name_input"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="plate">Placa *</Label>
-              <SecureInput
+              <SimpleInput
                 id="plate"
                 {...register("plate", { required: true })}
                 placeholder="Ex: ABC-1234"
-                fieldType="alphanumeric"
                 maxLength={10}
-                strictMode={true}
-                rateLimitKey="car_plate_input"
               />
             </div>
           </div>
@@ -272,16 +266,13 @@ export function AddCarDialog() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="purchase_value">Valor de Compra (R$) *</Label>
-              <SecureInput
+              <SimpleInput
                 id="purchase_value"
                 type="number"
                 step="0.01"
                 {...register("purchase_value", { required: true })}
                 placeholder="Ex: 50000"
-                fieldType="numeric"
                 maxLength={15}
-                strictMode={true}
-                rateLimitKey="car_value_input"
               />
             </div>
 
@@ -306,53 +297,45 @@ export function AddCarDialog() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="payment_method">Forma de Pagamento</Label>
-              <SecureInput
+              <SimpleInput
                 id="payment_method"
                 {...register("payment_method")}
                 placeholder="Ex: Financiamento, À vista"
-                fieldType="text"
                 maxLength={50}
-                rateLimitKey="payment_method_input"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="purchase_date">Data da Compra</Label>
-              <SecureInput
+              <SimpleInput
                 id="purchase_date"
                 type="date"
                 {...register("purchase_date")}
-                fieldType="text"
                 maxLength={10}
-                rateLimitKey="purchase_date_input"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="mileage">Quilometragem</Label>
-            <SecureInput
+            <SimpleInput
               id="mileage"
               type="number"
               {...register("mileage")}
               placeholder="Ex: 50000"
-              fieldType="numeric"
               maxLength={10}
-              rateLimitKey="mileage_input"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>
-            <SecureInput
+            <SimpleInput
               id="notes"
               {...register("notes")}
               placeholder="Observações sobre o carro..."
-              variant="textarea"
+              multiline={true}
               rows={3}
-              fieldType="description"
               maxLength={1000}
-              rateLimitKey="notes_input"
             />
           </div>
 

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { AuthFallback } from "@/components/AuthFallback";
 import { Car, Shield, Chrome } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -11,13 +12,26 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading, signInWithGoogle } = useAuth();
+  const [showFallback, setShowFallback] = useState(false);
 
   // ProtectedRoute check - log removido para produção
+
+  if (showFallback) {
+    return <AuthFallback onRetry={() => setShowFallback(false)} />;
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <LoadingSpinner size="lg" text="Carregando..." />
+        <LoadingSpinner 
+          size="lg" 
+          text="Verificando autenticação..." 
+          timeout={2000}
+          onTimeout={() => {
+            console.warn('Auth loading timeout, showing fallback');
+            setShowFallback(true);
+          }}
+        />
       </div>
     );
   }

@@ -1,25 +1,96 @@
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   text?: string;
+  timeout?: number;
+  onTimeout?: () => void;
+  showText?: boolean;
+  fullScreen?: boolean;
 }
 
-export function LoadingSpinner({ size = "md", className, text }: LoadingSpinnerProps) {
+export function LoadingSpinner({ 
+  size = "md", 
+  className, 
+  text, 
+  timeout = 2000,
+  onTimeout,
+  showText = true,
+  fullScreen = false
+}: LoadingSpinnerProps) {
+  const [isTimeout, setIsTimeout] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(timeout / 1000);
+
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-8 h-8",
     lg: "w-12 h-12"
   };
 
+  useEffect(() => {
+    if (timeout <= 0) return;
+
+    // Countdown timer
+    const countdownInterval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Timeout handler
+    const timeoutId = setTimeout(() => {
+      setIsTimeout(true);
+      if (onTimeout) {
+        onTimeout();
+      }
+    }, timeout);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(countdownInterval);
+    };
+  }, [timeout, onTimeout]);
+
+  const containerClass = fullScreen 
+    ? "min-h-screen bg-background flex items-center justify-center"
+    : cn("flex flex-col items-center justify-center py-8", className);
+
+  if (isTimeout) {
+    return (
+      <div className={containerClass}>
+        <div className="text-center space-y-4">
+          <div className="text-yellow-600 dark:text-yellow-400">
+            ⚠️ Carregamento demorou mais que o esperado
+          </div>
+          <p className="text-muted-foreground text-sm">
+            Tentando recarregar os dados...
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => window.location.reload()}
+          >
+            Recarregar Página
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("flex flex-col items-center justify-center py-8", className)}>
+    <div className={containerClass}>
       <div className={cn(
         "animate-spin rounded-full border-2 border-muted border-t-primary",
         sizeClasses[size]
       )} />
-      {text && (
+      {showText && text && (
         <p className="text-muted-foreground mt-4 text-sm font-medium">
           {text}
         </p>

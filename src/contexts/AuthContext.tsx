@@ -71,20 +71,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    // Get initial session
+    // Get initial session with timeout
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user?.id) {
-        await fetchUserProfile(session.user.id);
+      try {
+        // Set a timeout for the initial session check
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session timeout')), 2000)
+        );
+        
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user?.id) {
+          // Try to fetch user profile with timeout
+          try {
+            const profilePromise = fetchUserProfile(session.user.id);
+            const profileTimeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Profile timeout')), 1500)
+            );
+            await Promise.race([profilePromise, profileTimeoutPromise]);
+          } catch (profileError) {
+            console.warn('Profile fetch failed, continuing without profile:', profileError);
+            // Continue without profile - user can still use the app
+          }
+        }
+        
+      } catch (error) {
+        console.warn('Initial session check failed:', error);
+        // If session check fails, assume no session and continue
+        setSession(null);
+        setUser(null);
+        setUserProfile(null);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
-    getInitialSession();
+    // Set a maximum timeout for the entire auth initialization
+    const maxTimeout = setTimeout(() => {
+      console.warn('Auth initialization timeout - forcing completion');
+      setLoading(false);
+    }, 2000);
+
+    getInitialSession().finally(() => {
+      clearTimeout(maxTimeout);
+    });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -95,7 +128,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(session?.user ?? null);
         
         if (session?.user?.id) {
-          await fetchUserProfile(session.user.id);
+          // Try to fetch user profile with timeout for auth changes too
+          try {
+            const profilePromise = fetchUserProfile(session.user.id);
+            const profileTimeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Profile timeout on auth change')), 1500)
+            );
+            await Promise.race([profilePromise, profileTimeoutPromise]);
+          } catch (profileError) {
+            console.warn('Profile fetch failed on auth change, continuing without profile:', profileError);
+            // Continue without profile - user can still use the app
+          }
         } else {
           setUserProfile(null);
         }

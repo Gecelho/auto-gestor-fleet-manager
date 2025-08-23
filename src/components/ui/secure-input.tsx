@@ -24,6 +24,7 @@ interface SecureInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEleme
   allowedChars?: RegExp;
   blockedPatterns?: RegExp[];
   variant?: 'input' | 'textarea';
+  multiline?: boolean; // Add multiline prop
   rows?: number;
   realTimeValidation?: boolean;
   rateLimitKey?: string;
@@ -42,6 +43,7 @@ export const SecureInput = forwardRef<HTMLInputElement | HTMLTextAreaElement, Se
     allowedChars,
     blockedPatterns,
     variant = 'input',
+    multiline = false,
     rows = 3,
     realTimeValidation = true,
     rateLimitKey,
@@ -224,8 +226,26 @@ export const SecureInput = forwardRef<HTMLInputElement | HTMLTextAreaElement, Se
       }
     };
 
+    // Determine which variant to use
+    const useTextarea = variant === 'textarea' || multiline;
+    
+    // Filter out custom props that shouldn't be passed to DOM elements
+    const { 
+      fieldType: _fieldType,
+      strictMode: _strictMode,
+      showSecurityIndicator: _showSecurityIndicator,
+      allowedChars: _allowedChars,
+      blockedPatterns: _blockedPatterns,
+      variant: _variant,
+      multiline: _multiline,
+      realTimeValidation: _realTimeValidation,
+      rateLimitKey: _rateLimitKey,
+      onSecurityViolation: _onSecurityViolation,
+      ...domProps
+    } = props;
+
     const inputProps = {
-      ...props,
+      ...domProps,
       value: internalValue,
       onChange: handleChange,
       onBlur: handleBlur,
@@ -243,7 +263,7 @@ export const SecureInput = forwardRef<HTMLInputElement | HTMLTextAreaElement, Se
 
     return (
       <div className="relative">
-        {variant === 'textarea' ? (
+        {useTextarea ? (
           <Textarea
             ref={ref as React.Ref<HTMLTextAreaElement>}
             rows={rows}
