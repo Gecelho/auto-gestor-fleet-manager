@@ -17,6 +17,7 @@ export const useCars = () => {
         const { data: cars, error: carsError } = await supabase
           .from("cars")
           .select("*")
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
         if (carsError) throw carsError;

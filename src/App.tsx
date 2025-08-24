@@ -11,6 +11,8 @@ import "@/lib/security-middleware-simple"; // Inicializar middleware automaticam
 import Index from "./pages/Index";
 import CarDetail from "./pages/CarDetail";
 import NotFound from "./pages/NotFound";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,6 +71,9 @@ const AppContent = () => {
                   <CarDetail />
                 </ProtectedRoute>
               } />
+              {/* Admin Routes - Public access for login, protected for dashboard */}
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/painel-admin" element={<AdminDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

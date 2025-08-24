@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface GeneralReportData {
   totalRevenue: number;
@@ -41,10 +42,12 @@ interface GeneralPeriodReportData extends GeneralReportData {
 }
 
 export const useGeneralReport = (carIds: string[], month: string, year: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ["general-report", carIds, month, year],
+    queryKey: ["general-report", carIds, month, year, user?.id],
     queryFn: async (): Promise<GeneralReportData> => {
-      if (!month) {
+      if (!month || !user?.id) {
         return {
           totalRevenue: 0,
           totalExpenses: 0,
@@ -57,10 +60,8 @@ export const useGeneralReport = (carIds: string[], month: string, year: string) 
       const startDate = `${month}-01`;
       const endDate = `${month}-31`;
 
-
-
-      // Get all cars if no specific cars selected
-      let carsQuery = supabase.from("cars").select("id, name");
+      // Get all cars for the current user
+      let carsQuery = supabase.from("cars").select("id, name").eq("user_id", user.id);
       if (carIds.length > 0) {
         carsQuery = carsQuery.in("id", carIds);
       }
@@ -130,10 +131,12 @@ export const useGeneralReport = (carIds: string[], month: string, year: string) 
 };
 
 export const useGeneralPeriodReport = (carIds: string[], startMonth: string, endMonth: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ["general-period-report", carIds, startMonth, endMonth],
+    queryKey: ["general-period-report", carIds, startMonth, endMonth, user?.id],
     queryFn: async (): Promise<GeneralPeriodReportData> => {
-      if (!startMonth || !endMonth) {
+      if (!startMonth || !endMonth || !user?.id) {
         return {
           totalRevenue: 0,
           totalExpenses: 0,
@@ -146,8 +149,8 @@ export const useGeneralPeriodReport = (carIds: string[], startMonth: string, end
       const startDate = `${startMonth}-01`;
       const endDate = `${endMonth}-31`;
 
-      // Get all cars if no specific cars selected
-      let carsQuery = supabase.from("cars").select("id, name");
+      // Get all cars for the current user
+      let carsQuery = supabase.from("cars").select("id, name").eq("user_id", user.id);
       if (carIds.length > 0) {
         carsQuery = carsQuery.in("id", carIds);
       }
