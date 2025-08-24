@@ -1096,7 +1096,7 @@ const AdminDashboard = () => {
                           <SelectItem value="all">Todas</SelectItem>
                           <SelectItem value="expired">Expiradas</SelectItem>
                           <SelectItem value="expiring-soon">Vencendo em 30 dias</SelectItem>
-                          <SelectItem value="active">Ativas (>30 dias)</SelectItem>
+                          <SelectItem value="active">Ativas (&gt;30 dias)</SelectItem>
                         </SelectContent>
                       </Select>
 
