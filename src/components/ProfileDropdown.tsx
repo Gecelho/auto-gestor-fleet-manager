@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import { SoundButton } from "@/components/ui/sound-button";
 import {
@@ -33,6 +34,7 @@ export function ProfileDropdown() {
   const { theme, setTheme } = useTheme();
   const { settings: soundSettings, toggleSounds, playSound } = useSounds();
   const { data: subscription, isLoading: subscriptionLoading } = useSubscription();
+  const { data: userProfile } = useUser();
 
   const handleSoundToggle = () => {
     const wasEnabled = soundSettings.enabled;
@@ -72,7 +74,7 @@ export function ProfileDropdown() {
     }
   };
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
+  const userName = userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
   const userEmail = user?.email || '';
   const userAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);

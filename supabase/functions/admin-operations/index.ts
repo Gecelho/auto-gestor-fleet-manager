@@ -605,14 +605,26 @@ async function deleteUser(supabaseAdmin: any, currentUserId: string, data: any) 
     }
 
     if (deleteAllData) {
-      // Delete all user data (cascading delete)
-      // This will be handled by database constraints
-      const { error } = await supabaseAdmin
+      // Delete from auth.users first (this will cascade to other tables)
+      const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+      
+      if (authError) {
+        console.error('Error deleting user from auth:', authError)
+        throw new Error(`Failed to delete user from authentication: ${authError.message}`)
+      }
+
+      // The database triggers should handle cascading deletes from the users table
+      // But let's also explicitly delete from users table if it still exists
+      const { error: dbError } = await supabaseAdmin
         .from('users')
         .delete()
         .eq('id', userId)
 
-      if (error) throw error
+      // Don't throw error if user doesn't exist in users table (might have been deleted by cascade)
+      if (dbError && dbError.code !== 'PGRST116') {
+        console.error('Error deleting user from users table:', dbError)
+        throw dbError
+      }
     } else {
       // Just deactivate the user
       const { error } = await supabaseAdmin

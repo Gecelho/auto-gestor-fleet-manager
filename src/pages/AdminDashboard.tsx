@@ -149,9 +149,9 @@ const AdminDashboard = () => {
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('admin-theme');
-      return savedTheme === 'dark';
+      return savedTheme ? savedTheme === 'dark' : true; // Default to dark
     }
-    return false;
+    return true; // Default to dark
   });
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -180,7 +180,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('admin-theme');
-      if (savedTheme === 'dark') {
+      if (savedTheme === 'dark' || !savedTheme) { // Default to dark if no saved theme
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
@@ -470,7 +470,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async (userId: string, deleteAllData: boolean = false) => {
-    if (!confirm(`Tem certeza que deseja ${deleteAllData ? 'excluir permanentemente' : 'desativar'} este usuário?`)) {
+    if (!confirm(`Tem certeza que deseja ${deleteAllData ? 'excluir permanentemente este usuário? Esta ação não pode ser desfeita e removerá todos os dados do usuário, incluindo a conta de autenticação' : 'desativar'} este usuário?`)) {
       return;
     }
 
@@ -479,7 +479,32 @@ const AdminDashboard = () => {
       const response = await AdminAPI.deleteUser(userId, deleteAllData);
       if (response.success) {
         toast.success(deleteAllData ? 'Usuário excluído permanentemente!' : 'Usuário desativado!');
+        
+        // Force update the users list
+        if (deleteAllData) {
+          // Remove from local state immediately for permanent deletion
+          setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+          setFilteredUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+        } else {
+          // Update status for deactivation
+          setUsers(prevUsers => prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, subscription_status: 'suspended' }
+              : user
+          ));
+          setFilteredUsers(prevUsers => prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, subscription_status: 'suspended' }
+              : user
+          ));
+        }
+        
+        // Also reload from server to ensure consistency
         await loadAllUsers();
+        
+        // Close any open dialogs
+        setShowUserDetails(false);
+        setShowEditUser(false);
       } else {
         toast.error(response.error || 'Erro ao excluir usuário');
       }
@@ -1280,7 +1305,7 @@ const AdminDashboard = () => {
                                   <Button
                                     variant="destructive"
                                     size="sm"
-                                    onClick={() => handleDeleteUser(user.id, false)}
+                                    onClick={() => handleDeleteUser(user.id, true)}
                                     className="gap-1 text-xs"
                                     disabled={loading}
                                   >
