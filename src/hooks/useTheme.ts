@@ -10,12 +10,8 @@ export function useTheme() {
       return savedTheme;
     }
     
-    // Se não há tema salvo, usa o padrão do sistema
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    
-    return 'light';
+    // Se não há tema salvo, usa 'dark' como padrão
+    return 'dark';
   });
 
   useEffect(() => {

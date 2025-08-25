@@ -298,8 +298,23 @@ const AdminDashboard = () => {
       }
 
       try {
-        const data = await AdminAPI.verifyAdmin();
-        if (!data.isAdmin) {
+        // Add retry logic for admin verification
+        let retries = 3;
+        let data;
+        
+        while (retries > 0) {
+          try {
+            data = await AdminAPI.verifyAdmin();
+            break;
+          } catch (error) {
+            retries--;
+            if (retries === 0) throw error;
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+
+        if (!data?.isAdmin) {
           throw new Error('Not an admin');
         }
 
@@ -309,7 +324,7 @@ const AdminDashboard = () => {
         console.error('Admin verification failed:', error);
         setError('Acesso negado. Você não tem permissões de administrador.');
         setTimeout(() => {
-          signOut();
+          navigate('/admin-login');
         }, 3000);
       } finally {
         setLoading(false);
@@ -499,35 +514,44 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       let newExpiration: Date;
+      const now = new Date();
       
       if (user.subscription_expires_at) {
-        // Se já tem data de expiração, adiciona 1 mês a partir dela
         const currentExpiration = new Date(user.subscription_expires_at);
-        newExpiration = new Date(currentExpiration);
-        newExpiration.setMonth(newExpiration.getMonth() + 1);
+        
+        // Se a assinatura ainda está ativa (data de expiração é futura)
+        if (currentExpiration > now) {
+          // Adiciona 30 dias à data de expiração atual
+          newExpiration = new Date(currentExpiration);
+          newExpiration.setDate(newExpiration.getDate() + 30);
+        } else {
+          // Se a assinatura já expirou, adiciona 30 dias a partir de hoje
+          newExpiration = new Date(now);
+          newExpiration.setDate(newExpiration.getDate() + 30);
+        }
       } else {
-        // Se não tem data de expiração, define para 1 mês a partir de hoje
-        newExpiration = new Date();
-        newExpiration.setMonth(newExpiration.getMonth() + 1);
+        // Se não tem data de expiração, define para 30 dias a partir de hoje
+        newExpiration = new Date(now);
+        newExpiration.setDate(newExpiration.getDate() + 30);
       }
 
       const response = await AdminAPI.updateUser(user.id, {
         subscription_expires_at: newExpiration.toISOString(),
-        subscription_status: user.subscription_status || 'active'
+        subscription_status: 'active'
       });
       
       if (response.success) {
-        toast.success('Adicionado +1 mês com sucesso!');
+        toast.success('Adicionado +30 dias com sucesso!');
         await loadAllUsers();
         // Fechar dialogs se estiverem abertos
         setShowUserDetails(false);
         setShowEditUser(false);
       } else {
-        toast.error(response.error || 'Erro ao adicionar mês');
+        toast.error(response.error || 'Erro ao adicionar tempo');
       }
     } catch (error) {
       console.error('Error adding month:', error);
-      toast.error('Erro ao adicionar mês');
+      toast.error('Erro ao adicionar tempo');
     } finally {
       setLoading(false);
     }
@@ -1451,21 +1475,7 @@ const AdminDashboard = () => {
         <Dialog open={showUserDetails} onOpenChange={setShowUserDetails}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <DialogHeader className="flex-shrink-0">
-              <DialogTitle className="flex items-center justify-between">
-                <span>Detalhes do Usuário</span>
-                {selectedUser && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleAddOneMonth(selectedUser)}
-                    className="gap-2 bg-green-600 hover:bg-green-700 text-white"
-                    disabled={loading}
-                  >
-                    <Plus className="h-4 w-4" />
-                    +1 Mês
-                  </Button>
-                )}
-              </DialogTitle>
+              <DialogTitle>Detalhes do Usuário</DialogTitle>
             </DialogHeader>
             {selectedUser && (
               <div className="flex-1 overflow-y-auto space-y-4 pr-2">
@@ -1627,21 +1637,7 @@ const AdminDashboard = () => {
         <Dialog open={showEditUser} onOpenChange={setShowEditUser}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
             <DialogHeader className="flex-shrink-0">
-              <DialogTitle className="flex items-center justify-between">
-                <span>Editar Usuário</span>
-                {selectedUser && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleAddOneMonth(selectedUser)}
-                    className="gap-2 bg-green-600 hover:bg-green-700 text-white"
-                    disabled={loading}
-                  >
-                    <Plus className="h-4 w-4" />
-                    +1 Mês
-                  </Button>
-                )}
-              </DialogTitle>
+              <DialogTitle>Editar Usuário</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto space-y-4 pr-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1724,6 +1720,20 @@ const AdminDashboard = () => {
                     onChange={(e) => setEditForm({...editForm, subscription_expires_at: e.target.value})}
                     className="w-full"
                   />
+                  {selectedUser && (
+                    <div className="pt-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleAddOneMonth(selectedUser)}
+                        className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+                        disabled={loading}
+                      >
+                        <Plus className="h-4 w-4" />
+                        +30 Dias
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,51 +1,36 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield, AlertTriangle, Chrome } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { AdminAPI } from "@/lib/admin-api";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { user, session } = useAuth();
+  const location = useLocation();
+  const { user, session, signOut } = useAuth();
+  const { isAdmin, loading: adminLoading, error: adminError, verifyAdmin, clearError } = useAdminAuth();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isVerifying, setIsVerifying] = useState(false);
 
-  // Check if user is already logged in and verify admin status
+  // Navigate to admin panel when user is verified as admin
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (session?.access_token && user) {
-        setIsVerifying(true);
-        try {
-          const data = await AdminAPI.verifyAdmin();
-          if (data.isAdmin) {
-            navigate('/painel-admin');
-            return;
-          }
-        } catch (error) {
-          console.error('Error verifying admin status:', error);
-        } finally {
-          setIsVerifying(false);
-        }
-      }
-    };
-
-    checkAdminStatus();
-  }, [session, user, navigate]);
+    if (isAdmin === true) {
+      navigate('/painel-admin');
+    }
+  }, [isAdmin, navigate]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    setError(null);
+    clearError();
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/painel-admin`,
+          redirectTo: `${window.location.origin}/admin-login`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -58,29 +43,40 @@ const AdminLogin = () => {
       }
     } catch (error: any) {
       console.error('Error signing in with Google:', error);
-      setError(error.message || 'Erro ao fazer login com Google');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setError(null);
-    } catch (error: any) {
-      console.error('Error signing out:', error);
-      setError(error.message || 'Erro ao fazer logout');
-    }
-  };
 
-  if (isVerifying) {
+
+  if (adminLoading) {
+    const urlParams = new URLSearchParams(location.search);
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const isOAuthCallback = urlParams.has('code') || hashParams.has('access_token');
+    
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Verificando permissões...</p>
-        </div>
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              </div>
+              <div className="space-y-2">
+                <p className="font-medium">
+                  {isOAuthCallback ? 'Processando login...' : 'Verificando permissões...'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {isOAuthCallback 
+                    ? 'Aguarde enquanto validamos suas credenciais de administrador.'
+                    : 'Verificando se você tem acesso ao painel administrativo.'
+                  }
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -99,10 +95,23 @@ const AdminLogin = () => {
         </CardHeader>
         
         <CardContent className="space-y-4">
-          {error && (
+          {adminError && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                {adminError}
+                {adminError.includes('permissões de administrador') && (
+                  <div className="mt-2">
+                    <Button 
+                      onClick={clearError}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Tentar novamente
+                    </Button>
+                  </div>
+                )}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -117,7 +126,7 @@ const AdminLogin = () => {
               
               <div className="flex flex-col gap-2">
                 <Button 
-                  onClick={handleSignOut}
+                  onClick={signOut}
                   variant="outline"
                   className="w-full"
                 >

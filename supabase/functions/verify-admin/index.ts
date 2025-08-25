@@ -68,7 +68,11 @@ serve(async (req) => {
     if (userError || !user) {
       console.error('Token verification failed:', userError)
       return new Response(
-        JSON.stringify({ isAdmin: false, error: 'Invalid token' }),
+        JSON.stringify({ 
+          isAdmin: false, 
+          error: userError?.message || 'Invalid token',
+          details: userError 
+        }),
         { 
           status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -77,6 +81,8 @@ serve(async (req) => {
     }
 
     // Check if user is in admin_users table
+    console.log('Checking admin status for user:', user.id, user.email)
+    
     const { data: adminData, error: adminError } = await supabaseAdmin
       .from('admin_users')
       .select('user_id, email, is_active')
@@ -84,10 +90,16 @@ serve(async (req) => {
       .eq('is_active', true)
       .single()
 
+    console.log('Admin query result:', { adminData, adminError })
+
     if (adminError && adminError.code !== 'PGRST116') {
       console.error('Database error checking admin status:', adminError)
       return new Response(
-        JSON.stringify({ isAdmin: false, error: 'Database error' }),
+        JSON.stringify({ 
+          isAdmin: false, 
+          error: 'Database error',
+          details: adminError 
+        }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }

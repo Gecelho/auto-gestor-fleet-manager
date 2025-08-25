@@ -18,21 +18,33 @@ export class AdminAPI {
       throw new Error('Token de autenticação não encontrado');
     }
 
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    try {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: data ? JSON.stringify(data) : undefined,
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Erro na requisição: ${response.status} - ${errorText}`);
+      if (!response.ok) {
+        let errorMessage = `Erro na requisição: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error(`Error in ${endpoint}:`, error);
+      throw error;
     }
-
-    return response.json();
   }
 
   /**
